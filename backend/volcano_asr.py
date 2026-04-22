@@ -12,6 +12,7 @@ async def recognize(audio_base64: str, language: str = "zh") -> dict:
 
     headers = {
         "X-Api-Key": APP_KEY,
+        "X-Api-Access-Key": access_token,
         "X-Api-Resource-Id": "volc.bigasr.auc_turbo",
         "X-Api-Request-Id": str(uuid.uuid4()),
         "X-Api-Sequence": "-1",
@@ -28,6 +29,9 @@ async def recognize(audio_base64: str, language: str = "zh") -> dict:
         resp = await client.post(ASR_URL, json=payload, headers=headers)
         resp.raise_for_status()
         data = resp.json()
+
+    if data.get("code", 0) != 0:
+        raise RuntimeError(f"ASR API error: {data.get('message', data)}")
 
     if "result" in data and "text" in data["result"]:
         return {"text": data["result"]["text"], "language": language}
