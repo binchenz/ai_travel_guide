@@ -76,7 +76,10 @@ async def synthesize(text: str, language: str = "zh") -> dict:
 
         # 4. Receive audio chunks until task/session finishes
         while True:
-            msg = await asyncio.wait_for(ws.recv(), timeout=10)
+            try:
+                msg = await asyncio.wait_for(ws.recv(), timeout=10)
+            except asyncio.TimeoutError:
+                raise RuntimeError("TTS audio stream timed out")
             if isinstance(msg, bytes):
                 audio_chunks.append(msg)
                 continue
@@ -91,7 +94,9 @@ async def synthesize(text: str, language: str = "zh") -> dict:
                 if audio_b64:
                     audio_chunks.append(base64.b64decode(audio_b64))
 
-        # 5. FinishSession
+        # 5. FinishSession — sent after the receive loop because the V3 bidirectional
+        # API requires the client to wait for the server to signal completion
+        # (TaskFinished/SessionFinished) before tearing down the session.
         try:
             await ws.send(json.dumps({
                 "event": "FinishSession",
@@ -100,8 +105,8 @@ async def synthesize(text: str, language: str = "zh") -> dict:
                     "session_id": session_id,
                 },
             }))
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Warning: {e}")
 
         # 6. FinishConnection
         try:
@@ -109,8 +114,8 @@ async def synthesize(text: str, language: str = "zh") -> dict:
                 "event": "FinishConnection",
                 "header": {"connect_id": connect_id},
             }))
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Warning: {e}")
 
     if not audio_chunks:
         raise RuntimeError("No audio data received from TTS service")
