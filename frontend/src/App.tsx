@@ -191,6 +191,7 @@ function App() {
   const [depthLevel, setDepthLevel] = useState<DepthLevel>("entry")
   const [ttsSpeed, setTtsSpeed] = useState<TTSSpeed>(0.9)
   const [isRecording, setIsRecording] = useState(false)
+  const [isTranscribing, setIsTranscribing] = useState(false)
   const [drawerTarget, setDrawerTarget] =
     useState<{ type: "hall" | "dynasty" | "person"; id: string } | null>(null)
   const [halls,     setHalls]     = useState<Record<string, Hall>>({})
@@ -268,6 +269,41 @@ function App() {
     }
   }, [])
 
+  // Encode an AudioBuffer as a 16 kHz mono 16-bit PCM WAV Blob.
+  // MediaRecorder outputs WebM/OGG, not WAV — this converts it properly.
+  const encodeWav = async (rawBlob: Blob): Promise<Blob> => {
+    const arrayBuf = await rawBlob.arrayBuffer()
+    const ctx = new AudioContext()
+    const decoded = await ctx.decodeAudioData(arrayBuf)
+    ctx.close()
+
+    const TARGET_SR = 16000
+    const offlineCtx = new OfflineAudioContext(1, Math.ceil(decoded.duration * TARGET_SR), TARGET_SR)
+    const src = offlineCtx.createBufferSource()
+    src.buffer = decoded
+    src.connect(offlineCtx.destination)
+    src.start()
+    const resampled = await offlineCtx.startRendering()
+
+    const samples = resampled.getChannelData(0)
+    const pcm = new Int16Array(samples.length)
+    for (let i = 0; i < samples.length; i++) {
+      pcm[i] = Math.max(-32768, Math.min(32767, Math.round(samples[i] * 32767)))
+    }
+
+    // WAV container
+    const wavBuf = new ArrayBuffer(44 + pcm.byteLength)
+    const v = new DataView(wavBuf)
+    const str = (off: number, s: string) => { for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)) }
+    str(0, 'RIFF'); v.setUint32(4, 36 + pcm.byteLength, true); str(8, 'WAVE')
+    str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true)
+    v.setUint16(22, 1, true); v.setUint32(24, TARGET_SR, true)
+    v.setUint32(28, TARGET_SR * 2, true); v.setUint16(32, 2, true)
+    v.setUint16(34, 16, true); str(36, 'data'); v.setUint32(40, pcm.byteLength, true)
+    new Int16Array(wavBuf, 44).set(pcm)
+    return new Blob([wavBuf], { type: 'audio/wav' })
+  }
+
   // Voice input functions
   const startVoiceInput = async () => {
     try {
@@ -287,47 +323,41 @@ function App() {
       mediaRecorder.onstop = async () => {
         mediaRecorderRef.current = null
         setIsRecording(false)
-        
+        setIsTranscribing(true)
+
         try {
-          // Create audio blob
-          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' })
-          
-          // Convert to base64
-          const reader = new FileReader()
-          reader.onloadend = async () => {
-            const base64Audio = (reader.result as string).split(',')[1]
-            
-            // Send to backend ASR
-            const response = await fetch(`${API_BASE_URL}/asr`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                audio: base64Audio,
-                language: language
-              })
-            })
-            
-            if (response.ok) {
-              const data = await response.json()
-              if (data.text) {
-                setInputText(prev => prev + data.text)
-                showToast('success', language === 'en' ? 'Voice recognized' : '语音已识别')
-              } else if (data.error) {
-                showToast('error', data.error)
-              }
+          // MediaRecorder produces WebM/OGG, not WAV. Convert to 16kHz mono PCM WAV.
+          const rawBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' })
+          const wavBlob = await encodeWav(rawBlob)
+
+          // Convert WAV to base64
+          const arrayBuf = await wavBlob.arrayBuffer()
+          const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuf)))
+
+          // Send proper WAV to backend ASR
+          const response = await fetch(`${API_BASE_URL}/asr`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ audio: base64Audio, language }),
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            if (data.text && data.text.trim()) {
+              setInputText(prev => prev + data.text)
+              showToast('success', language === 'en' ? 'Voice recognized' : '语音已识别')
             } else {
-              showToast('error', language === 'en' ? 'ASR service error' : '语音识别服务错误')
+              showToast('info', language === 'en' ? 'No speech detected' : '未检测到语音，请重试')
             }
+          } else {
+            showToast('error', language === 'en' ? 'ASR service error' : '语音识别服务错误')
           }
-          reader.readAsDataURL(audioBlob)
         } catch (error) {
-          console.error('Error processing audio:', error)
+          console.error('ASR error:', error)
           showToast('error', language === 'en' ? 'Error processing audio' : '处理音频时出错')
         } finally {
-          // Stop all tracks
           stream.getTracks().forEach(track => track.stop())
+          setIsTranscribing(false)
         }
       }
       
@@ -1292,21 +1322,29 @@ function App() {
           <motion.button
             type="button"
             onClick={isRecording ? stopVoiceInput : startVoiceInput}
+            disabled={isTranscribing}
+            title={isTranscribing ? (language === 'en' ? 'Recognizing…' : '识别中…') : isRecording ? (language === 'en' ? 'Stop recording' : '停止录音') : (language === 'en' ? 'Start recording' : '开始录音')}
             className={`p-3 rounded-full transition-all ${
-              isRecording 
-                ? "bg-red-500 text-white animate-pulse" 
-                : "bg-slate-700 text-slate-200 hover:bg-slate-600"
+              isTranscribing
+                ? "bg-yellow-500 text-white animate-pulse cursor-wait"
+                : isRecording
+                  ? "bg-red-500 text-white animate-pulse"
+                  : "bg-slate-700 text-slate-200 hover:bg-slate-600"
             }`}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isRecording ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              )}
-            </svg>
+            {isTranscribing ? (
+              <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin block" />
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isRecording ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                )}
+              </svg>
+            )}
           </motion.button>
           <motion.button
             type="submit"
