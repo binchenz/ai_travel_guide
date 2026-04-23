@@ -60,6 +60,8 @@ function App() {
   const currentPlayIndexRef = useRef<number>(-1)
   const isAutoPlayingRef = useRef<boolean>(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  // Pre-fetched audio for the next TTS segment — eliminates gap between sentences.
+  const nextAudioPromiseRef = useRef<Promise<HTMLAudioElement | null> | null>(null)
 
   // Toast notification
   const showToast = (type: "success" | "error" | "info", message: string) => {
@@ -390,135 +392,109 @@ function App() {
     return breaks
   }
 
-  // Play buffered content - with speed support!
-  const playBufferedContent = async () => {
-    if (speechSynthesis.speaking || isAutoPlayingRef.current) return
-    
-    const buffer = streamBufferRef.current
-    if (buffer.length < 50) return // Need enough content
-    
-    // Find good sentence breaks
-    const breaks = findSentenceBreaks(buffer)
-    if (breaks.length === 0) return
-    
-    // Take first break point
-    const breakIndex = Math.min(breaks[0], buffer.length)
-    const textToSpeak = buffer.substring(0, breakIndex)
-    
-    if (textToSpeak.trim().length < 10) return
-    
-    // Start auto-play!
-    isAutoPlayingRef.current = true
-    
+  // Fetch a TTS audio element from the backend without blocking.
+  const fetchAudioElement = async (text: string): Promise<HTMLAudioElement | null> => {
     try {
-      // Use Volcano Engine TTS service
       const response = await fetch(`${API_BASE_URL}/tts`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: textToSpeak,
-          language: language
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, language }),
       })
-      
-      if (response.ok) {
-        const data = await response.json()
-        
-        if (data.audio) {
-          // Create audio element and play
-          const audio = new Audio(`data:audio/mp3;base64,${data.audio}`)
-          
-          audio.onplay = () => {
-            setIsPlaying(true)
-            setPlayingIndex(currentPlayIndexRef.current)
-          }
-          
-          audio.onended = () => {
-            // Remove spoken part from buffer
-            streamBufferRef.current = streamBufferRef.current.substring(breakIndex)
-            isAutoPlayingRef.current = false
-            setIsPlaying(false)
-            
-            // Continue playing remaining content if any
-            if (streamBufferRef.current.length > 50) {
-              setTimeout(playBufferedContent, 100)
-            }
-          }
-          
-          audio.onerror = () => {
-            isAutoPlayingRef.current = false
-            setIsPlaying(false)
-          }
-          
-          await audio.play()
-        } else {
-          isAutoPlayingRef.current = false
-          setIsPlaying(false)
-        }
-      } else {
-        // Fallback to browser TTS if Volcano Engine fails
-        const utterance = new SpeechSynthesisUtterance(textToSpeak)
-        utterance.lang = language === "en" ? "en-US" : "zh-CN"
-        utterance.rate = ttsSpeed
-        utterance.pitch = 1.0
-        
-        utterance.onstart = () => {
-          setIsPlaying(true)
-          setPlayingIndex(currentPlayIndexRef.current)
-        }
-        
-        utterance.onend = () => {
-          // Remove spoken part from buffer
-          streamBufferRef.current = streamBufferRef.current.substring(breakIndex)
-          isAutoPlayingRef.current = false
-          setIsPlaying(false)
-          
-          // Continue playing remaining content if any
-          if (streamBufferRef.current.length > 50) {
-            setTimeout(playBufferedContent, 100)
-          }
-        }
-        
-        utterance.onerror = () => {
-          isAutoPlayingRef.current = false
-          setIsPlaying(false)
-        }
-        
-        speechSynthesis.speak(utterance)
-      }
-    } catch (error) {
-      console.error('Auto-play TTS Error:', error)
-      // Fallback to browser TTS
+      if (!response.ok) return null
+      const data = await response.json()
+      if (!data.audio) return null
+      return new Audio(`data:audio/mp3;base64,${data.audio}`)
+    } catch {
+      return null
+    }
+  }
+
+  // Start fetching the next sentence into nextAudioPromiseRef so it is ready
+  // (or nearly ready) by the time the current sentence finishes playing.
+  const prefetchNextSegment = (buffer: string, breakIndex: number) => {
+    const remaining = buffer.substring(breakIndex)
+    if (remaining.length < 30) return
+    const nextBreaks = findSentenceBreaks(remaining)
+    if (nextBreaks.length === 0 || nextBreaks[0] < 15) return
+    const nextText = remaining.substring(0, nextBreaks[0])
+    nextAudioPromiseRef.current = fetchAudioElement(nextText)
+  }
+
+  // Play buffered SSE content sentence-by-sentence with 1-segment lookahead.
+  // `preloaded` is an already-fetched audio element from the previous segment's
+  // pre-fetch; passing it skips the network round-trip entirely.
+  const playBufferedContent = async (preloaded?: HTMLAudioElement | null) => {
+    if (speechSynthesis.speaking || isAutoPlayingRef.current) return
+
+    const buffer = streamBufferRef.current
+    if (buffer.length < 50) return
+
+    const breaks = findSentenceBreaks(buffer)
+    if (breaks.length === 0) return
+
+    const breakIndex = Math.min(breaks[0], buffer.length)
+    const textToSpeak = buffer.substring(0, breakIndex)
+    if (textToSpeak.trim().length < 10) return
+
+    isAutoPlayingRef.current = true
+
+    // Use pre-fetched audio when available, otherwise fetch now.
+    const audio = preloaded !== undefined ? preloaded : await fetchAudioElement(textToSpeak)
+
+    if (!audio) {
+      // Backend unavailable — fall back to browser speech synthesis.
       const utterance = new SpeechSynthesisUtterance(textToSpeak)
       utterance.lang = language === "en" ? "en-US" : "zh-CN"
       utterance.rate = ttsSpeed
       utterance.pitch = 1.0
-      
       utterance.onstart = () => {
         setIsPlaying(true)
         setPlayingIndex(currentPlayIndexRef.current)
       }
-      
       utterance.onend = () => {
-        // Remove spoken part from buffer
         streamBufferRef.current = streamBufferRef.current.substring(breakIndex)
         isAutoPlayingRef.current = false
         setIsPlaying(false)
-        
-        // Continue playing remaining content if any
-        if (streamBufferRef.current.length > 50) {
-          setTimeout(playBufferedContent, 100)
+        if (streamBufferRef.current.length > 50) setTimeout(() => playBufferedContent(), 100)
+      }
+      utterance.onerror = () => { isAutoPlayingRef.current = false; setIsPlaying(false) }
+      speechSynthesis.speak(utterance)
+      return
+    }
+
+    // Kick off next-segment pre-fetch immediately so it runs in parallel
+    // with the current audio playing (~1-2 s overlap eliminates the gap).
+    prefetchNextSegment(buffer, breakIndex)
+
+    audio.onplay = () => {
+      setIsPlaying(true)
+      setPlayingIndex(currentPlayIndexRef.current)
+    }
+
+    audio.onended = () => {
+      streamBufferRef.current = streamBufferRef.current.substring(breakIndex)
+      isAutoPlayingRef.current = false
+      setIsPlaying(false)
+
+      if (streamBufferRef.current.length > 50) {
+        const promise = nextAudioPromiseRef.current
+        nextAudioPromiseRef.current = null
+        if (promise) {
+          // Hand off the pre-fetched audio — zero gap when already resolved.
+          promise.then(next => playBufferedContent(next))
+        } else {
+          setTimeout(() => playBufferedContent(), 100)
         }
       }
-      
-      utterance.onerror = () => {
-        isAutoPlayingRef.current = false
-        setIsPlaying(false)
-      }
-      
-      speechSynthesis.speak(utterance)
+    }
+
+    audio.onerror = () => { isAutoPlayingRef.current = false; setIsPlaying(false) }
+
+    try {
+      await audio.play()
+    } catch {
+      isAutoPlayingRef.current = false
+      setIsPlaying(false)
     }
   }
 
@@ -538,12 +514,13 @@ function App() {
     setIsLoading(true)
     setChatError(null)
 
-    // Stop previous playback
+    // Stop previous playback and discard any stale pre-fetch
     if (speechSynthesis.speaking) {
       speechSynthesis.cancel()
       isAutoPlayingRef.current = false
     }
     streamBufferRef.current = ""
+    nextAudioPromiseRef.current = null
     
     // New message index
     const currentMessageIndex = isInitial ? 0 : messages.length + (isInitial ? 0 : 1)
