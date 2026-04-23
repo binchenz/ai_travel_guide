@@ -8,6 +8,10 @@ import base64
 import os
 import sys
 
+# 加载环境变量
+from dotenv import load_dotenv
+load_dotenv(dotenv_path='../.env')
+
 async def test_asr():
     from volcano_asr import recognize
 
