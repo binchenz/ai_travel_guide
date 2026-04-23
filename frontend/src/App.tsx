@@ -410,19 +410,23 @@ function App() {
 
   // Stop every active audio source (HTMLAudioElement + browser speech synthesis).
   // Also cancels any in-flight /tts fetch and clears the streaming pipeline.
+  // All operations are wrapped in try/catch because some mobile WebViews throw
+  // on speechSynthesis access, AbortController.abort(), or audio.src="".
   const stopAllAudio = () => {
-    // Stop in-flight fetch
-    ttsAbortRef.current?.abort()
+    try { ttsAbortRef.current?.abort() } catch { /* ignore */ }
     ttsAbortRef.current = null
-    // Stop HTMLAudioElement
-    if (currentAudioRef.current) {
-      currentAudioRef.current.pause()
-      currentAudioRef.current.src = ""
-      currentAudioRef.current = null
-    }
-    // Stop browser speech synthesis
-    if (speechSynthesis.speaking) speechSynthesis.cancel()
-    // Stop streaming pipeline
+    try {
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause()
+        currentAudioRef.current.src = ""
+        currentAudioRef.current = null
+      }
+    } catch { /* ignore */ }
+    try {
+      if (typeof speechSynthesis !== 'undefined' && speechSynthesis.speaking) {
+        speechSynthesis.cancel()
+      }
+    } catch { /* ignore */ }
     isAutoPlayingRef.current = false
     nextAudioPromiseRef.current = null
     streamBufferRef.current = ""
@@ -588,18 +592,26 @@ function App() {
 
   // Select exhibit
   const selectExhibit = (exhibit: Exhibit) => {
-    setCurrentExhibit(exhibit)
-    setMessages([])
-    setChatError(null)
-    if (speechSynthesis.speaking) {
-      speechSynthesis.cancel()
+    try {
+      setCurrentExhibit(exhibit)
+      setMessages([])
+      setChatError(null)
+      try {
+        if (typeof speechSynthesis !== 'undefined' && speechSynthesis.speaking) {
+          speechSynthesis.cancel()
+        }
+      } catch { /* ignore — some WebViews throw here */ }
       isAutoPlayingRef.current = false
       setIsPlaying(false)
       setPlayingIndex(-1)
+      setDepthLevel("entry")
+      const targetId = (exhibit as any).originalId || exhibit.id
+      sendMessage(language === "en" ? "Tell me about this object" : "介绍一下这个文物", targetId, true)
+    } catch (err) {
+      const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+      setChatError(`[selectExhibit 崩溃] ${msg}`)
+      showToast("error", `点击展品失败: ${msg}`)
     }
-    setDepthLevel("entry") // reset to entry for new exhibit
-    const targetId = (exhibit as any).originalId || exhibit.id
-    sendMessage(language === "en" ? "Tell me about this object" : "介绍一下这个文物", targetId, true)
   }
 
   // Smart sentence breaks for streaming TTS
