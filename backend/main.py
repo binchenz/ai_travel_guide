@@ -52,6 +52,7 @@ else:
 
 # Ontology-backed exhibit store (loads and validates at startup)
 from ontology.loader import load_or_exit
+from ontology.resolver import expand_artifact as _expand_artifact
 ONTOLOGY = load_or_exit()
 
 
@@ -190,13 +191,12 @@ async def get_exhibits():
     return _artifact_list()
 
 
-@app.get("/exhibits/{exhibit_id}")
-async def get_exhibit(exhibit_id: str):
-    """Get single exhibit by ID"""
-    exhibit = get_exhibit_by_id(exhibit_id)
-    if not exhibit:
-        raise HTTPException(status_code=404, detail="Exhibit not found")
-    return exhibit.model_dump()
+@app.get("/exhibits/{exhibit_id:path}")
+async def get_exhibit_detail(exhibit_id: str):
+    """Get single exhibit by ID with resolved hall/dynasty/persons objects"""
+    if exhibit_id not in ONTOLOGY.artifacts:
+        raise HTTPException(status_code=404, detail="exhibit_not_found")
+    return _expand_artifact(ONTOLOGY.artifacts[exhibit_id], ONTOLOGY)
 
 
 async def generate_streaming_response(
@@ -520,6 +520,42 @@ def _edge_tts_installed() -> bool:
         return True
     except Exception:
         return False
+
+
+@app.get("/ontology/halls")
+async def list_halls():
+    return [h.model_dump() for h in ONTOLOGY.halls.values()]
+
+
+@app.get("/ontology/dynasties")
+async def list_dynasties():
+    return [d.model_dump() for d in ONTOLOGY.dynasties.values()]
+
+
+@app.get("/ontology/persons")
+async def list_persons():
+    return [p.model_dump() for p in ONTOLOGY.persons.values()]
+
+
+@app.get("/ontology/halls/{hall_id:path}/artifacts")
+async def list_hall_artifacts(hall_id: str):
+    if hall_id not in ONTOLOGY.halls:
+        raise HTTPException(status_code=404, detail="hall_not_found")
+    return [a.model_dump() for a in ONTOLOGY.artifacts.values() if a.hallId == hall_id]
+
+
+@app.get("/ontology/dynasties/{dynasty_id:path}/artifacts")
+async def list_dynasty_artifacts(dynasty_id: str):
+    if dynasty_id not in ONTOLOGY.dynasties:
+        raise HTTPException(status_code=404, detail="dynasty_not_found")
+    return [a.model_dump() for a in ONTOLOGY.artifacts.values() if a.dynastyId == dynasty_id]
+
+
+@app.get("/ontology/persons/{person_id:path}/artifacts")
+async def list_person_artifacts(person_id: str):
+    if person_id not in ONTOLOGY.persons:
+        raise HTTPException(status_code=404, detail="person_not_found")
+    return [a.model_dump() for a in ONTOLOGY.artifacts.values() if person_id in a.personIds]
 
 
 if __name__ == "__main__":
