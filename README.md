@@ -1,219 +1,187 @@
 # AI Travel Guide - Shanghai Museum
 
-## 项目概述
+> 上海博物馆 AI 智能导览系统 — 三层本体论架构 + 语音交互
 
-这是一个为上海博物馆设计的AI导览应用，提供展品详情、语音介绍和智能问答功能。
+## 🌐 线上访问
+
+| 环境 | 地址 |
+|------|------|
+| **生产服务器** | http://47.97.225.14 |
+| **GitHub 仓库** | https://github.com/binchenz/ai_travel_guide |
+
+---
 
 ## 技术架构
 
-### 后端 (Python/FastAPI)
-- **框架**: FastAPI
-- **端口**: 8080
-- **主要功能**:
-  - 展品数据管理 (`/exhibits`)
-  - 智能聊天响应 (`/chat`, `/chat/stream`)
-  - 火山引擎TTS V2语音合成 (`/tts`)
-  - 火山引擎ASR V2语音识别 (`/asr`)
+### 三层本体论数据模型
 
-### 前端 (React/TypeScript + Vite)
-- **端口**: 3003
-- **主要功能**:
-  - 展品列表展示
-  - 语音播放 (TTS)
-  - 语音输入 (ASR)
-  - 实时聊天界面
+```
+FACTS  (data/ontology/)
+  artifacts.json   — 15 件展品（结构化字段：period/dimensions/narrativePoints）
+  halls.json       — 3 个展厅
+  dynasties.json   — 11 个朝代（有前后继承关系）
+  persons.json     — 7 位历史人物
+  schemas/         — JSON Schema 验证（每次启动自动校验）
 
-## 已解决的问题
+NARRATIVE  (data/persona/current.json v2.1)
+  depthTemplates.entry/deeper/expert — 叙事模板（与事实层解耦）
+  principles / boundaries / tone
 
-### 1. 火山引擎TTS V2集成 - 已完成
-
-**解决方案**:
-- 实现了完整的火山引擎TTS V2 WebSocket客户端
-- 使用WebSocket连接池优化性能，减少连接建立时间
-- 添加了edge-tts作为备用方案，确保服务稳定性
-- 解决了TTS生成速度慢和句子中间停顿大的问题
-
-**当前状态**:
-- ✅ 后端TTS端点已实现
-- ✅ 返回真实的火山引擎TTS音频
-- ✅ 支持中文和英文语音合成
-- ✅ 集成了连接池优化性能
-
-### 2. 火山引擎ASR V2集成 - 已完成
-
-**解决方案**:
-- 实现了完整的火山引擎ASR V2 WebSocket客户端
-- 支持PCM音频格式的处理和发送
-- 优化了音频数据的分块发送和结果收集
-
-**当前状态**:
-- ✅ 后端ASR端点已实现
-- ✅ 支持语音识别功能
-- ✅ 前端已集成MediaRecorder录音
-- ✅ 解决了浏览器SpeechRecognition API的网络限制问题
-
-### 3. 前端预览访问问题
-
-**问题描述**:
-前端预览功能有时无法正常工作。
-
-**可能原因**:
-- 跨域（CORS）配置问题
-- 端口冲突
-- 浏览器缓存
-
-**解决方案**:
-1. 清除浏览器缓存
-2. 检查CORS配置
-3. 确保端口3003未被占用
-
-## API端点
-
-### GET /exhibits
-获取所有展品列表
-
-**响应**:
-```json
-{
-  "id": "artifact-da-ke-ding",
-  "originalId": "/exhibits/bronze/da-ke-ding",
-  "name": {"en": "Da Ke Ding", "zh": "大克鼎"},
-  "imageUrl": "https://...",
-  "dynasty": "Western Zhou",
-  "period": "约公元前10世纪",
-  "hall": "中国古代青铜器馆",
-  "quickQuestions": ["问题1", "问题2"]
-}
+SYNTHESIS  (backend/ontology/ + persona.py)
+  expand_artifact()        — 一层引用展开（hall/dynasty/persons）
+  build_system_prompt()    — 事实 × 叙事模板 → LLM
 ```
 
-### POST /chat
-发送聊天消息（非流式）
+### 后端 (Python 3.11 / FastAPI)
 
-**请求**:
-```json
-{
-  "userInput": "Tell me about Da Ke Ding",
-  "exhibitId": "artifact-da-ke-ding",
-  "sessionId": "uuid",
-  "depthLevel": "entry",
-  "language": "en"
-}
-```
+| 端点 | 功能 |
+|------|------|
+| `GET /exhibits` | 展品列表（含 hallId/dynastyId/personIds） |
+| `GET /exhibits/{id}` | 展品详情（展开 hall/dynasty/persons 对象） |
+| `GET /ontology/halls` | 展厅列表 |
+| `GET /ontology/dynasties` | 朝代列表 |
+| `GET /ontology/persons` | 人物列表 |
+| `GET /ontology/{type}/{id}/artifacts` | 按展厅/朝代/人物筛选展品 |
+| `POST /chat` | 聊天（非流式） |
+| `POST /chat/stream` | 聊天（SSE 流式） |
+| `POST /tts` | 语音合成（Edge TTS 主，火山 V3 备） |
+| `POST /asr` | 语音识别（火山 SAUC bigmodel） |
+| `GET /voice/health` | 语音服务健康状态 |
+| `GET /voice/metrics` | 语音服务性能指标 |
 
-### POST /chat/stream
-发送聊天消息（流式）
+### 前端 (React 18 / TypeScript / Vite)
 
-**请求**: 同上
+- 展品卡片列表（15 件，3 展厅）
+- **EntityChip**：展厅 / 朝代 / 人物点击 chip
+- **EntityDrawer**：侧滑抽屉展示实体详情 + 相关展品
+- 三档深度聊天（入门 / 进阶 / 专家）
+- 语音合成（TTS）— 1-segment 预取消除段间停顿
+- 语音识别（ASR）— 浏览器 WebM → 16kHz WAV 转码后发送
 
-**响应**: Server-Sent Events (SSE) 流
+---
 
-### POST /tts
-火山引擎TTS V2语音合成
+## 本地开发
 
-**请求**:
-```json
-{
-  "text": "大克鼎是西周时期的青铜器",
-  "language": "zh"
-}
-```
+### 前提
 
-**响应**:
-```json
-{
-  "audio": "base64_encoded_mp3",
-  "format": "mp3",
-  "message": "TTS V2 mock response"
-}
-```
+- Python 3.11+
+- Node.js 20+
 
-### POST /asr
-火山引擎ASR V2语音识别
-
-**请求**:
-```json
-{
-  "audio": "base64_encoded_audio",
-  "language": "zh"
-}
-```
-
-**响应**:
-```json
-{
-  "text": "识别结果文本",
-  "language": "zh"
-}
-```
-
-## 环境配置
-
-### 火山引擎凭证信息
-
-在[火山引擎控制台](https://console.volcengine.com/speech/app) 申请 App ID、
-Access Token 与 Secret Key，并写入本地 `.env`（**切勿提交到仓库**）。
-`backend/.env.example` 提供了完整的变量清单作为参考。
-
-### 火山引擎文档链接
-
-- **TTS V3 文档**: https://www.volcengine.com/docs/6561/1668014
-- **ASR V3 文档**: https://www.volcengine.com/docs/6561/1354869?lang=zh
-
-### 必需的环境变量
+### 启动
 
 ```bash
-# 模型服务（Moonshot/OpenAI 兼容）
+# 1. 克隆
+git clone https://github.com/binchenz/ai_travel_guide.git
+cd ai_travel_guide
+
+# 2. 后端
+cp backend/.env.example backend/.env
+# 在 .env 里填写凭证（见下方环境变量说明）
+cd backend && python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python main.py          # 监听 :8080
+
+# 3. 前端（新终端）
+cd frontend && npm install && npm run dev    # 监听 :3000
+```
+
+访问 http://localhost:3000
+
+---
+
+## 环境变量
+
+参考 `backend/.env.example`，复制为 `backend/.env` 后填写：
+
+```bash
+# LLM（Moonshot K2 兼容 OpenAI 接口）
 OPENAI_API_KEY=sk-...
 OPENAI_BASE_URL=https://api.moonshot.cn/v1
 MODEL_NAME=kimi-k2-turbo-preview
 
-# 火山引擎凭证
-VOLCANO_APP_KEY=<your_app_id>
-VOLCANO_ACCESS_TOKEN=<your_access_token>
+# 火山引擎语音服务
+VOLCANO_APP_KEY=<App ID>
+VOLCANO_ACCESS_TOKEN=<Access Token>
 
-# 语音后端可选调优
-VOICE_TTS_BACKEND=edge           # edge | volcano | auto
+# 语音后端调优（可选）
+VOICE_TTS_BACKEND=edge        # edge | volcano | auto
 VOICE_TTS_CACHE_SIZE=256
 VOICE_TTS_MAX_CONCURRENCY=8
 ```
 
-### 启动应用
+> **安全提示**：`.env` 已在 `.gitignore` 中，切勿提交到仓库。
+
+---
+
+## 生产服务器
+
+| 项目 | 详情 |
+|------|------|
+| 服务商 | 阿里云 ECS |
+| 公网 IP | `47.97.225.14` |
+| 系统 | Alibaba Cloud Linux 3 |
+| Python | 3.11 |
+| Node.js | 20.x |
+| Web 服务器 | nginx 1.20 |
+| 后端进程 | systemd `ai-guide.service` |
+| 代码目录 | `/root/ai_travel_guide` |
+
+### 常用运维命令
 
 ```bash
-# 1. 启动后端
-cd backend
-python3 main.py
+# 查看后端实时日志
+journalctl -u ai-guide -f
 
-# 2. 启动前端 (新终端)
-cd frontend
-npm run dev
+# 重启后端
+systemctl restart ai-guide
+
+# 更新部署（拉取最新代码 + 重建前端）
+cd /root/ai_travel_guide && git pull && \
+  cd frontend && npm run build && \
+  systemctl restart ai-guide && systemctl reload nginx
+
+# 查看 nginx 错误日志
+tail -50 /var/log/nginx/error.log
 ```
+
+### 快速一键重部署（服务器上运行）
+
+```bash
+cd /root/ai_travel_guide && git pull && bash deploy.sh
+```
+
+---
 
 ## 功能列表
 
-- [x] 展品列表展示
-- [x] 展品详情查看
-- [x] 聊天问答功能 + 流式响应
-- [x] 语音合成（Edge TTS 为主、火山 V3 备用，支持 LRU 缓存）
-- [x] 语音识别（火山 SAUC bigmodel WebSocket，支持动态超时）
-- [x] 语音观测性：`GET /voice/health`、`GET /voice/metrics`
+- [x] 展品列表（15 件，跨 3 展厅 / 11 朝代 / 7 历史人物）
+- [x] 三层本体论：Hall / Dynasty / Person 独立实体 + JSON Schema 验证
+- [x] EntityChip + EntityDrawer（点击朝代/展厅/人物查看相关展品）
+- [x] 聊天问答（非流式 + SSE 流式）
+- [x] 三档深度（入门 / 进阶 / 专家）— 深度感知 prompt
+- [x] 语音合成（Edge TTS LRU 缓存 + 1-segment 预取）
+- [x] 语音识别（WebM→WAV 转码，解决浏览器格式问题）
+- [x] 语音观测性（/voice/health + /voice/metrics）
+- [x] 生产部署（nginx 反代 + systemd 进程守护）
 
-## 观测端点
+## 下一步
 
-| 端点 | 用途 |
-|------|------|
-| `GET /voice/health` | 当前 TTS 后端、凭证配置状态、依赖可用性 |
-| `GET /voice/metrics` | 各后端调用数、p50/p95 延迟、错误率、缓存命中率 |
+1. 配置 Moonshot API Key，开启 AI 聊天功能
+2. 申请并配置火山 TTS V3（当前使用 Edge TTS 兜底）
+3. 绑定域名 + HTTPS（Let's Encrypt）
+4. 添加更多展品数据
 
-## 下一步工作
-
-1. 添加更多展品数据
-2. 优化 UI/UX 设计
-3. 多语言内容扩展
-4. 部署到生产环境（Redis 缓存 / 多实例）
+---
 
 ## 技术栈
 
-- **后端**: Python 3, FastAPI, Uvicorn, OpenAI API, 火山引擎SDK
-- **前端**: React 18, TypeScript, Vite, TailwindCSS, Radix UI
-- **语音服务**: 火山引擎TTS/ASR V2, 浏览器Web Speech API
+| 层 | 技术 |
+|----|------|
+| 后端 | Python 3.11, FastAPI, Uvicorn, Pydantic v2 |
+| 数据验证 | JSON Schema 2020-12, jsonschema |
+| 语音合成 | Edge-TTS (主), 火山引擎 TTS V3 (备) |
+| 语音识别 | 火山引擎 SAUC bigmodel WebSocket |
+| 前端 | React 18, TypeScript, Vite, Tailwind CSS |
+| Web 服务器 | nginx (反向代理 + 静态文件) |
+| 进程管理 | systemd |
+| 代码托管 | GitHub (binchenz/ai_travel_guide) |
