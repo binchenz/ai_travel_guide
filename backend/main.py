@@ -50,14 +50,35 @@ else:
     print("Warning: OPENAI_API_KEY not set - LLM features will not work")
     client = None
 
-# Load exhibit data
-DATA_PATH = Path(__file__).parent.parent / "data" / "exhibits.json"
-with open(DATA_PATH, "r", encoding="utf-8") as f:
-    EXHIBITS = json.load(f)
+# Ontology-backed exhibit store (loads and validates at startup)
+from ontology.loader import load_or_exit
+ONTOLOGY = load_or_exit()
 
-# Create simplified ID mapping for easier API usage
-EXHIBIT_ID_MAP = {ex["@id"]: ex for ex in EXHIBITS}
-EXHIBIT_SHORT_ID_MAP = {ex["@id"].replace("/", "-"): ex for ex in EXHIBITS}
+
+def _artifact_list() -> list:
+    """Build backward-compatible list for GET /exhibits."""
+    out = []
+    for a in ONTOLOGY.artifacts.values():
+        hall = ONTOLOGY.halls[a.hallId]
+        dyn  = ONTOLOGY.dynasties[a.dynastyId]
+        qq = a.quickQuestions.en if a.quickQuestions else []
+        out.append({
+            "id": a.id,
+            "originalId": a.id,
+            "type": a.type,
+            "name": a.name.model_dump(),
+            "imageUrl": a.imageUrl,
+            "hallId": a.hallId,
+            "dynastyId": a.dynastyId,
+            "personIds": a.personIds,
+            # deprecated legacy flat fields — kept for one release cycle
+            "hall": hall.name.en,
+            "dynasty": dyn.name.en,
+            "period": a.period.label.en if a.period else None,
+            "quickQuestions": qq,
+        })
+    return out
+
 
 # In-memory session store
 sessions: Dict[str, Dict[str, Any]] = {}
@@ -102,15 +123,15 @@ class ExampleReviewRequest(BaseModel):
 
 
 # --- Helper functions ---
-def get_exhibit_by_id(exhibit_id: str) -> Optional[Dict]:
-    """Get exhibit by ID (support both original and short ID formats)"""
-    if exhibit_id in EXHIBIT_ID_MAP:
-        return EXHIBIT_ID_MAP[exhibit_id]
-    if exhibit_id in EXHIBIT_SHORT_ID_MAP:
-        return EXHIBIT_SHORT_ID_MAP[exhibit_id]
-    converted = exhibit_id.replace("-", "/")
-    if converted in EXHIBIT_ID_MAP:
-        return EXHIBIT_ID_MAP[converted]
+def get_exhibit_by_id(exhibit_id: str):
+    """Get Artifact by ID (supports full artifact/... id or legacy short form)"""
+    if exhibit_id in ONTOLOGY.artifacts:
+        return ONTOLOGY.artifacts[exhibit_id]
+    # Legacy short-id: "artifact-da-ke-ding" → "artifact/da-ke-ding"
+    if exhibit_id.startswith("artifact-"):
+        converted = "artifact/" + exhibit_id[len("artifact-"):]
+        if converted in ONTOLOGY.artifacts:
+            return ONTOLOGY.artifacts[converted]
     return None
 
 
@@ -132,13 +153,16 @@ def get_or_create_session(session_id: str, language: str = "en") -> Dict[str, An
     return sessions[session_id]
 
 
-def build_enhanced_prompt(session: Dict[str, Any], exhibit: Dict[str, Any], language: str = "en") -> str:
+def build_enhanced_prompt(session: Dict[str, Any], exhibit, language: str = "en") -> str:
     """Build complete prompt with persona, examples, exhibit data, AND multi-level memory"""
+    exhibit_dict = exhibit.model_dump() if hasattr(exhibit, "model_dump") else exhibit
+    exhibit_id = exhibit.id if hasattr(exhibit, "id") else exhibit_dict.get("@id", "")
+
     # 基础人格 + 展品数据
-    system_prompt = persona_manager.build_system_prompt(language, exhibit)
+    system_prompt = persona_manager.build_system_prompt(language, exhibit_dict)
     
     # 好例子注入
-    relevant_examples = example_manager.get_relevant_examples("", exhibit.get("@id", ""))
+    relevant_examples = example_manager.get_relevant_examples("", exhibit_id)
     examples_text = example_manager.format_examples_for_prompt(relevant_examples)
     
     # 完整提示词 = 基础 + 例子 + 多层次记忆
@@ -160,22 +184,10 @@ async def health():
     }
 
 
-@app.get("/exhibits", response_model=List[Exhibit])
+@app.get("/exhibits")
 async def get_exhibits():
     """Get all exhibits"""
-    return [
-        {
-            "id": ex["@id"].replace("/", "-"),
-            "originalId": ex["@id"],
-            "name": ex["name"],
-            "imageUrl": ex["imageUrl"],
-            "dynasty": ex["dynasty"],
-            "period": ex["period"],
-            "hall": ex["hall"],
-            "quickQuestions": ex["quickQuestions"]
-        }
-        for ex in EXHIBITS
-    ]
+    return _artifact_list()
 
 
 @app.get("/exhibits/{exhibit_id}")
@@ -184,7 +196,7 @@ async def get_exhibit(exhibit_id: str):
     exhibit = get_exhibit_by_id(exhibit_id)
     if not exhibit:
         raise HTTPException(status_code=404, detail="Exhibit not found")
-    return exhibit
+    return exhibit.model_dump()
 
 
 async def generate_streaming_response(
@@ -220,20 +232,18 @@ async def generate_streaming_response(
             yield full_response
     else:
         # Fallback without LLM
-        current_depth = session["depthLevel"]
-        current_storyline = exhibit["storylines"].get(current_depth, exhibit["storylines"]["entry"])
-        full_response = f"{current_storyline['hook']}\n\nLet's start with {current_storyline['keyPoints'][0]}."
+        full_response = f"Welcome! I'm your guide for {exhibit.name.en}. How can I help you explore this artifact?"
         yield full_response
     
     # --- Fence 2: Output Check (after full response) ---
-    output_check = fence_manager.check_output(full_response, language, exhibit)
+    output_check = fence_manager.check_output(full_response, language, exhibit.model_dump())
     if not output_check.passed:
         print("[Fence] Output failed check")
         pass
     
     # --- Evolution: Auto-Extract for Review ---
     if len(full_response) > 50:
-        example_manager.add_pending_example(user_input, full_response, exhibit["@id"])
+        example_manager.add_pending_example(user_input, full_response, exhibit.id)
     
     # Update session AFTER streaming completes
     session["history"].append({"role": "user", "content": user_input})
@@ -274,11 +284,11 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=404, detail="Exhibit not found")
     
     # Update session: 展品切换逻辑
-    if session["currentExhibit"] != exhibit["@id"]:
-        session["currentExhibit"] = exhibit["@id"]
+    if session["currentExhibit"] != exhibit.id:
+        session["currentExhibit"] = exhibit.id
         session["turnCount"] = 0
-        if exhibit["@id"] not in session["visitedExhibits"]:
-            session["visitedExhibits"].append(exhibit["@id"])
+        if exhibit.id not in session["visitedExhibits"]:
+            session["visitedExhibits"].append(exhibit.id)
     
     # --- 记忆增强 1: 推断用户兴趣 ---
     session["interests"] = memory_manager.infer_user_interests(
@@ -317,18 +327,16 @@ async def chat(request: ChatRequest):
             response_content = fence_manager.get_fallback_response(request.language)
     else:
         # Fallback without LLM
-        current_depth = session["depthLevel"]
-        current_storyline = exhibit["storylines"].get(current_depth, exhibit["storylines"]["entry"])
-        response_content = f"{current_storyline['hook']}\n\nLet's start with {current_storyline['keyPoints'][0]}."
+        response_content = f"Welcome! I'm your guide for {exhibit.name.en}. How can I help you explore this artifact?"
     
     # --- Fence 2: Output Check ---
-    output_check = fence_manager.check_output(response_content, request.language, exhibit)
+    output_check = fence_manager.check_output(response_content, request.language, exhibit.model_dump())
     if not output_check.passed:
         response_content = fence_manager.get_fallback_response(request.language)
     
     # --- Evolution: Auto-Extract for Review ---
     if len(response_content) > 50:
-        example_manager.add_pending_example(request.userInput, response_content, exhibit["@id"])
+        example_manager.add_pending_example(request.userInput, response_content, exhibit.id)
     
     # Update session
     session["history"].append({"role": "user", "content": request.userInput})
@@ -344,7 +352,7 @@ async def chat(request: ChatRequest):
     
     return ChatResponse(
         content=response_content,
-        quickQuestions=exhibit["quickQuestions"],
+        quickQuestions=exhibit.quickQuestions.en if exhibit.quickQuestions else [],
         depthLevel=session["depthLevel"],
         personaVersion=persona_manager.get_version()
     )
@@ -375,11 +383,11 @@ async def chat_stream(request: ChatRequest):
         raise HTTPException(status_code=404, detail="Exhibit not found")
     
     # Update session
-    if session["currentExhibit"] != exhibit["@id"]:
-        session["currentExhibit"] = exhibit["@id"]
+    if session["currentExhibit"] != exhibit.id:
+        session["currentExhibit"] = exhibit.id
         session["turnCount"] = 0
-        if exhibit["@id"] not in session["visitedExhibits"]:
-            session["visitedExhibits"].append(exhibit["@id"])
+        if exhibit.id not in session["visitedExhibits"]:
+            session["visitedExhibits"].append(exhibit.id)
     
     # --- 记忆增强 ---
     session["interests"] = memory_manager.infer_user_interests(
