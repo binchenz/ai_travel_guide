@@ -775,6 +775,27 @@ function App() {
 
       // Streaming response + real-time TTS!
       const reader = res.body?.getReader()
+
+      // Fallback for browsers that don't support ReadableStream (e.g. Xiaomi browser).
+      // Re-call the non-streaming /chat endpoint and display the full response at once.
+      if (!reader) {
+        const fallback = await fetch(`${API_BASE_URL}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, exhibitId: exId, userInput: userMessage, language, depthLevel }),
+        })
+        const data = fallback.ok ? await fallback.json() : null
+        const content: string = data?.content || data?.response || (language === "en" ? "Sorry, no response." : "抱歉，没有收到回复。")
+        setMessages(prev => {
+          const msgs = [...prev]
+          msgs[msgs.length - 1] = { role: "assistant", content, isStreaming: false }
+          return msgs
+        })
+        streamBufferRef.current = content
+        setTimeout(playBufferedContent, 300)
+        return
+      }
+
       const decoder = new TextDecoder()
       let done = false
       let fullText = ""
