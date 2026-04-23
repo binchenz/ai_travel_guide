@@ -758,7 +758,31 @@ function App() {
       setMessages([{ role: "assistant", content: "", isStreaming: true }])
     }
 
+    // Detect mobile browsers. Many mobile WebViews (Xiaomi MIUI, WeChat, UC, QQ)
+    // have broken or partial ReadableStream support, so we use the non-streaming
+    // /chat endpoint and render the full response at once.
+    const isMobile = /Mobi|Android|iPhone|iPad|MIUI|UCBrowser|MicroMessenger|QQBrowser/i.test(navigator.userAgent)
+
     try {
+      if (isMobile) {
+        const fb = await fetch(`${API_BASE_URL}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId, exhibitId: exId, userInput: userMessage, language, depthLevel }),
+        })
+        if (!fb.ok) throw new Error(language === "en" ? "Server error" : "服务器错误")
+        const data = await fb.json()
+        const content: string = data?.content || (language === "en" ? "Sorry, no response." : "抱歉，没有收到回复。")
+        setMessages(prev => {
+          const msgs = [...prev]
+          msgs[msgs.length - 1] = { role: "assistant", content, isStreaming: false }
+          return msgs
+        })
+        streamBufferRef.current = content
+        setTimeout(playBufferedContent, 300)
+        return
+      }
+
       const res = await fetch(`${API_BASE_URL}/chat/stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -775,8 +799,7 @@ function App() {
         throw new Error(language === "en" ? "Server error" : "服务器错误")
       }
 
-      // Fallback for browsers with broken or unsupported ReadableStream (e.g. Xiaomi).
-      // Uses a single /chat call and displays the full response immediately.
+      // Fallback for desktop browsers that somehow can't get a reader.
       const chatFallback = async () => {
         const fb = await fetch(`${API_BASE_URL}/chat`, {
           method: "POST",
