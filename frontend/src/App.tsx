@@ -208,6 +208,8 @@ function App() {
   const currentAudioRef = useRef<HTMLAudioElement | null>(null)
   // Abort controller for the in-flight /tts fetch — cancels it when user clicks again.
   const ttsAbortRef = useRef<AbortController | null>(null)
+  // Active MediaRecorder — kept in a ref so stopVoiceInput() can actually call .stop().
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
 
   // Toast notification
   const showToast = (type: "success" | "error" | "info", message: string) => {
@@ -283,6 +285,7 @@ function App() {
       }
       
       mediaRecorder.onstop = async () => {
+        mediaRecorderRef.current = null
         setIsRecording(false)
         
         try {
@@ -335,11 +338,14 @@ function App() {
         stream.getTracks().forEach(track => track.stop())
       }
       
+      // Store instance so stopVoiceInput() can call .stop() immediately.
+      mediaRecorderRef.current = mediaRecorder
+
       // Start recording
       mediaRecorder.start()
       setIsRecording(true)
       
-      // Stop recording after 10 seconds (timeout)
+      // Safety timeout: auto-stop after 10 seconds if user forgets
       setTimeout(() => {
         if (mediaRecorder.state === 'recording') {
           mediaRecorder.stop()
@@ -354,7 +360,11 @@ function App() {
   }
 
   const stopVoiceInput = () => {
-    // MediaRecorder will automatically stop after recording
+    // Actually stop the recorder — this triggers onstop which sends audio to ASR.
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop()
+    }
+    mediaRecorderRef.current = null
     setIsRecording(false)
   }
 
