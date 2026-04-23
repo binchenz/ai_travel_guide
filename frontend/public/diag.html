@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>诊断</title>
+<style>
+body{font-family:sans-serif;padding:16px;font-size:14px;line-height:1.6}
+.box{background:#f5f5f5;padding:12px;margin:8px 0;border-radius:8px;word-break:break-all}
+.ok{color:green}.fail{color:red}
+button{padding:12px 20px;margin:8px 0;font-size:16px;width:100%}
+</style>
+</head>
+<body>
+<h2>浏览器诊断</h2>
+<div class="box" id="ua">UA: 检测中...</div>
+<div class="box">
+  <div>ReadableStream: <span id="rs"></span></div>
+  <div>fetch: <span id="ft"></span></div>
+  <div>AudioContext: <span id="ac"></span></div>
+  <div>Promise: <span id="pr"></span></div>
+  <div>async/await: <span id="aa"></span></div>
+</div>
+<button onclick="testAPI()">测试 /exhibits</button>
+<button onclick="testChat()">测试 /chat</button>
+<div class="box" id="result">(点击按钮测试)</div>
+
+<script>
+document.getElementById('ua').textContent = 'UA: ' + navigator.userAgent;
+document.getElementById('rs').innerHTML = typeof ReadableStream !== 'undefined' ? '<span class=ok>✓</span>' : '<span class=fail>✗</span>';
+document.getElementById('ft').innerHTML = typeof fetch !== 'undefined' ? '<span class=ok>✓</span>' : '<span class=fail>✗</span>';
+document.getElementById('ac').innerHTML = (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') ? '<span class=ok>✓</span>' : '<span class=fail>✗</span>';
+document.getElementById('pr').innerHTML = typeof Promise !== 'undefined' ? '<span class=ok>✓</span>' : '<span class=fail>✗</span>';
+try { eval('(async()=>{})()'); document.getElementById('aa').innerHTML = '<span class=ok>✓</span>'; }
+catch(e) { document.getElementById('aa').innerHTML = '<span class=fail>✗ ' + e.message + '</span>'; }
+
+function show(text, cls) {
+  document.getElementById('result').innerHTML = '<span class=' + (cls||'') + '>' + text + '</span>';
+}
+
+function testAPI() {
+  show('请求中...');
+  fetch('/exhibits').then(r => r.json()).then(d => {
+    show('✓ /exhibits OK, 返回 ' + d.length + ' 项, 第一件: ' + d[0].name.zh, 'ok');
+  }).catch(e => show('✗ 失败: ' + e.message, 'fail'));
+}
+
+function testChat() {
+  show('请求中 (最多 20 秒)...');
+  fetch('/chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      sessionId: 'diag-' + Date.now(),
+      exhibitId: 'artifact/da-ke-ding',
+      userInput: '介绍',
+      language: 'zh',
+      depthLevel: 'entry'
+    })
+  }).then(r => r.json()).then(d => {
+    show('✓ /chat OK: ' + (d.content || '').substring(0, 100), 'ok');
+  }).catch(e => show('✗ 失败: ' + e.message, 'fail'));
+}
+</script>
+</body>
+</html>
