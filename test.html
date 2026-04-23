@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test CORS</title>
+</head>
+<body>
+    <h1>Test CORS</h1>
+    <div id="result"></div>
+    <script>
+        async function testCORS() {
+            const resultDiv = document.getElementById('result');
+            try {
+                resultDiv.innerHTML = 'Loading...';
+                const response = await fetch('http://127.0.0.1:8080/exhibits');
+                if (!response.ok) {
+                    throw new Error('Response not ok');
+                }
+                const data = await response.json();
+                resultDiv.innerHTML = `Success! Loaded ${data.length} exhibits.`;
+                console.log('Exhibits:', data);
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                console.error('Error:', error);
+            }
+        }
+        testCORS();
+    </script>
+</body>
+</html>
