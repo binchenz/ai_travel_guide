@@ -19,6 +19,9 @@ from persona import persona_manager
 from fence import fence_manager
 from examples import example_manager
 from memory_manager import memory_manager
+from voice_metrics import metrics as voice_metrics
+from volcano_tts import synthesize as tts_synthesize
+from volcano_asr import recognize as asr_recognize
 
 # Load environment variables
 load_dotenv()
@@ -438,48 +441,77 @@ async def review_example(example_id: str, review: ExampleReviewRequest):
 
 @app.post("/tts")
 async def text_to_speech(request: Request):
-    """Convert text to speech using Volcano Engine TTS V3"""
-    from volcano_tts import synthesize
+    """Text-to-speech. Default backend is Edge TTS; Volcano opt-in via env.
 
+    Returns:
+        {"audio": base64, "format": "mp3", "backend": "edge"|"volcano"}
+    """
     body = await request.json()
-    text = body.get("text")
+    text = (body.get("text") or "").strip()
     language = body.get("language", "zh")
 
     if not text:
-        raise HTTPException(status_code=400, detail="Text parameter is required")
-
-    if not os.getenv("VOLCANO_ACCESS_TOKEN"):
-        raise HTTPException(status_code=500, detail="Volcano Engine credentials not configured")
+        raise HTTPException(status_code=400, detail="text is required")
 
     try:
-        result = await synthesize(text, language)
-        return result
-    except Exception as e:
-        print(f"TTS error: {e}")
-        raise HTTPException(status_code=500, detail=f"TTS error: {str(e)}")
+        return await tts_synthesize(text, language)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        logger = __import__("logging").getLogger("voice.tts")
+        logger.exception("TTS endpoint failed")
+        raise HTTPException(status_code=502, detail="tts_backend_unavailable")
 
 
 @app.post("/asr")
 async def speech_to_text(request: Request):
-    """Convert speech to text using Volcano Engine ASR V3"""
-    from volcano_asr import recognize
+    """Speech-to-text via Volcano SAUC bigmodel.
 
+    Returns ``{"text": str, "language": str}``. A successful call with
+    pure silence will yield an empty string; transport or auth errors
+    surface as 502 rather than being hidden behind an empty result.
+    """
     body = await request.json()
     audio_data = body.get("audio")
     language = body.get("language", "zh")
 
     if not audio_data:
-        raise HTTPException(status_code=400, detail="Audio data is required")
-
+        raise HTTPException(status_code=400, detail="audio is required")
     if not os.getenv("VOLCANO_ACCESS_TOKEN"):
-        raise HTTPException(status_code=500, detail="Volcano Engine credentials not configured")
+        raise HTTPException(status_code=503, detail="asr_not_configured")
 
     try:
-        result = await recognize(audio_data, language)
-        return result
-    except Exception as e:
-        print(f"ASR error: {e}")
-        raise HTTPException(status_code=500, detail=f"ASR error: {str(e)}")
+        return await asr_recognize(audio_data, language)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        logger = __import__("logging").getLogger("voice.asr")
+        logger.exception("ASR endpoint failed")
+        raise HTTPException(status_code=502, detail="asr_backend_unavailable")
+
+
+@app.get("/voice/health")
+async def voice_health():
+    """Lightweight diagnostic: which backends are configured."""
+    return {
+        "tts_backend": os.getenv("VOICE_TTS_BACKEND", "edge"),
+        "volcano_configured": bool(os.getenv("VOLCANO_ACCESS_TOKEN")),
+        "edge_tts_available": _edge_tts_installed(),
+    }
+
+
+@app.get("/voice/metrics")
+async def voice_metrics_endpoint():
+    """In-process metrics for /tts and /asr. Not persisted across restarts."""
+    return voice_metrics.snapshot()
+
+
+def _edge_tts_installed() -> bool:
+    try:
+        import edge_tts  # noqa: F401
+        return True
+    except Exception:
+        return False
 
 
 if __name__ == "__main__":
