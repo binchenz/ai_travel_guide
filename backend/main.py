@@ -156,20 +156,24 @@ def get_or_create_session(session_id: str, language: str = "en") -> Dict[str, An
 
 def build_enhanced_prompt(session: Dict[str, Any], exhibit, language: str = "en") -> str:
     """Build complete prompt with persona, examples, exhibit data, AND multi-level memory"""
-    exhibit_dict = exhibit.model_dump() if hasattr(exhibit, "model_dump") else exhibit
-    exhibit_id = exhibit.id if hasattr(exhibit, "id") else exhibit_dict.get("@id", "")
+    exhibit_id = exhibit.id if hasattr(exhibit, "id") else ""
+    depth_level = session.get("depthLevel", "entry")
 
-    # 基础人格 + 展品数据
-    system_prompt = persona_manager.build_system_prompt(language, exhibit_dict)
-    
-    # 好例子注入
+    artifact = ONTOLOGY.artifacts.get(exhibit_id)
+    artifact_expanded = _expand_artifact(artifact, ONTOLOGY) if artifact else None
+
+    system_prompt = persona_manager.build_system_prompt(
+        language=language,
+        depth_level=depth_level,
+        artifact_expanded=artifact_expanded,
+    )
+
     relevant_examples = example_manager.get_relevant_examples("", exhibit_id)
     examples_text = example_manager.format_examples_for_prompt(relevant_examples)
-    
-    # 完整提示词 = 基础 + 例子 + 多层次记忆
+
     base_full = system_prompt + examples_text
     full_prompt = memory_manager.build_full_prompt(base_full, session)
-    
+
     return full_prompt
 
 

@@ -89,39 +89,115 @@ class PersonaManager:
         lang = language if language in self.current_persona["persona"] else "en"
         return self.current_persona["persona"][lang]
 
-    def build_system_prompt(self, language: str = "en", exhibit_data: Optional[Dict] = None) -> str:
+    def get_depth_template(self, language: str, depth_level: str) -> Dict:
         persona = self.get_persona(language)
-        
-        prompt_parts = [f"{persona['identity']}", f"", f"### Personality", f"{persona['personality']}", f"", f"### Guiding Principles"]
-        
-        for principle in persona["principles"]:
-            prompt_parts.append(f"- {principle}")
-        
-        # Cultural Translator (兼容旧版本)
-        prompt_parts.extend(["", "### Cultural Translator"])
-        if "cultural_translator" in persona:
-            for instruction in persona["cultural_translator"]:
-                prompt_parts.append(f"- {instruction}")
-        else:
-            # 老版本默认值
-            if language == "en":
-                prompt_parts.append("- Explain Chinese cultural concepts in simple terms")
-                prompt_parts.append("- Use everyday analogies when possible")
-            else:
-                prompt_parts.append("- 用简单易懂的话解释中国文化概念")
-                prompt_parts.append("- 尽量用生活化的比喻")
-        
-        prompt_parts.extend(["", "### Boundaries"])
-        for boundary in persona["boundaries"]:
-            prompt_parts.append(f"- {boundary}")
-        
-        prompt_parts.extend(["", f"### How to respond when you don't know", persona["fallback"], "", f"### Tone", persona["tone"]])
-        
-        if exhibit_data:
-            prompt_parts.extend(["", "### Current Exhibit (ONLY use this factual data)"])
-            prompt_parts.append(json.dumps(exhibit_data, ensure_ascii=False, indent=2))
-        
-        return "\n".join(prompt_parts)
+        templates = persona.get("depthTemplates", {})
+        return templates.get(depth_level) or templates.get("entry") or {
+            "opener": "",
+            "focus": "",
+            "sentenceStyle": "",
+        }
+
+    def build_system_prompt(
+        self,
+        language: str = "en",
+        depth_level: str = "entry",
+        artifact_expanded: Optional[Dict] = None,
+    ) -> str:
+        persona = self.get_persona(language)
+        dt = self.get_depth_template(language, depth_level)
+
+        parts: list = [
+            persona["identity"],
+            "",
+            "### Personality",
+            persona["personality"],
+            "",
+            "### Guiding Principles",
+            *(f"- {p}" for p in persona["principles"]),
+            "",
+            "### Cultural Translator",
+            *(f"- {i}" for i in persona.get("cultural_translator", [])),
+            "",
+            "### Boundaries",
+            *(f"- {b}" for b in persona["boundaries"]),
+            "",
+            f"### How to respond at this depth level ({depth_level})",
+            f"- {dt['opener']}",
+            f"- Focus: {dt['focus']}",
+            f"- Sentence style: {dt['sentenceStyle']}",
+            "",
+            "### Fallback",
+            persona["fallback"],
+            "",
+            "### Tone",
+            persona["tone"],
+        ]
+
+        if artifact_expanded:
+            parts += ["", "### Current artifact (facts only — do not invent beyond this)"]
+            parts.append(self._format_artifact_facts(artifact_expanded, language))
+
+            nps = (artifact_expanded.get("narrativePoints") or {}).get(depth_level) or []
+            if nps:
+                parts += ["", "### Narrative points you may draw from"]
+                parts += [f"- {p}" for p in nps]
+
+            related = self._format_related_entities(artifact_expanded, language)
+            if related:
+                parts += ["", "### Related entities the visitor can ask about next", related]
+
+        return "\n".join(parts)
+
+    def _format_artifact_facts(self, a: Dict, language: str) -> str:
+        lang = language if language in ("en", "zh") else "en"
+
+        def bi(obj):
+            return obj.get(lang) if isinstance(obj, dict) else obj
+
+        lines = [f"- Name: {bi(a['name'])}"]
+        hall = a.get("hall") or {}
+        dyn  = a.get("dynasty") or {}
+        if dyn:
+            lines.append(f"- Dynasty: {bi(dyn.get('name'))} ({bi((dyn.get('period') or {}).get('label'))})")
+        if hall:
+            lines.append(f"- Hall: {bi(hall.get('name'))}, floor {hall.get('floor')}")
+        if a.get("period"):
+            lines.append(f"- Period: {bi(a['period'].get('label'))}")
+        dims = a.get("dimensions") or {}
+        if dims:
+            dim_parts = [f"{k} {v['value']} {v['unit']}" for k, v in dims.items()]
+            lines.append(f"- Dimensions: {', '.join(dim_parts)}")
+        if a.get("material"):
+            lines.append(f"- Material: {', '.join(a['material'])}")
+        if a.get("techniques"):
+            lines.append(f"- Techniques: {', '.join(a['techniques'])}")
+        insc = a.get("inscriptions") or {}
+        if insc:
+            sig = bi(insc.get("significance")) if insc.get("significance") else ""
+            lines.append(f"- Inscriptions: {insc.get('characterCount', 0)} characters. {sig}")
+        ctx = a.get("culturalContext") or {}
+        if ctx.get("ritualUse"):
+            lines.append(f"- Ritual use: {bi(ctx.get('ritualUse'))}")
+        if ctx.get("socialFunction"):
+            lines.append(f"- Social function: {bi(ctx.get('socialFunction'))}")
+        return "\n".join(lines)
+
+    def _format_related_entities(self, a: Dict, language: str) -> str:
+        lang = language if language in ("en", "zh") else "en"
+
+        def bi(x):
+            return x.get(lang) if isinstance(x, dict) else x
+
+        chunks = []
+        persons = a.get("persons") or []
+        if persons:
+            chunks.append("- Persons: " + ", ".join(bi(p["name"]) for p in persons))
+        rels = a.get("relationships") or {}
+        for kind, targets in rels.items():
+            if targets:
+                chunks.append(f"- {kind}: {', '.join(targets)}")
+        return "\n".join(chunks)
 
     def get_version(self) -> str:
         return self.current_persona["version"]
