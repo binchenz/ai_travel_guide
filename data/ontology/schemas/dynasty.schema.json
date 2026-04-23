@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dynasty.schema.json",
+  "title": "Dynasty",
+  "type": "object",
+  "required": ["id", "name", "period"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^dynasty/[a-z0-9-]+$" },
+    "name": { "$ref": "#/$defs/bilingualString" },
+    "period": {
+      "type": "object",
+      "required": ["start", "end", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "start": { "type": "integer" },
+        "end":   { "type": "integer" },
+        "label": { "$ref": "#/$defs/bilingualString" }
+      }
+    },
+    "predecessor": { "type": "string", "pattern": "^dynasty/[a-z0-9-]+$" },
+    "successor":   { "type": "string", "pattern": "^dynasty/[a-z0-9-]+$" },
+    "shortDesc":   { "$ref": "#/$defs/bilingualString" }
+  },
+  "$defs": {
+    "bilingualString": {
+      "type": "object",
+      "required": ["en", "zh"],
+      "additionalProperties": false,
+      "properties": {
+        "en": { "type": "string", "minLength": 1 },
+        "zh": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

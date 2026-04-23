@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "artifact.schema.json",
+  "title": "Artifact",
+  "type": "object",
+  "required": ["id", "type", "name", "hallId", "dynastyId"],
+  "additionalProperties": false,
+  "properties": {
+    "id":        { "type": "string", "pattern": "^artifact/[a-z0-9-]+$" },
+    "type":      { "type": "string" },
+    "name":      { "$ref": "#/$defs/bilingualString" },
+    "imageUrl":  { "type": "string", "format": "uri" },
+    "hallId":    { "type": "string", "pattern": "^hall/[a-z0-9-]+$" },
+    "dynastyId": { "type": "string", "pattern": "^dynasty/[a-z0-9-]+$" },
+    "personIds": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^person/[a-z0-9-]+$" }
+    },
+    "period": {
+      "type": "object",
+      "required": ["start", "end", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "start": { "type": "integer" },
+        "end":   { "type": "integer" },
+        "label": { "$ref": "#/$defs/bilingualString" }
+      }
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["value", "unit"],
+        "additionalProperties": false,
+        "properties": {
+          "value": { "type": "number" },
+          "unit":  { "type": "string" }
+        }
+      }
+    },
+    "material":   { "type": "array", "items": { "type": "string" } },
+    "techniques": { "type": "array", "items": { "type": "string" } },
+    "inscriptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "characterCount": { "type": "integer", "minimum": 0 },
+        "significance":   { "$ref": "#/$defs/bilingualString" }
+      }
+    },
+    "culturalContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ritualUse":        { "$ref": "#/$defs/bilingualString" },
+        "socialFunction":   { "$ref": "#/$defs/bilingualString" },
+        "relatedConcepts":  { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "narrativePoints": {
+      "type": "object",
+      "required": ["entry", "deeper", "expert"],
+      "additionalProperties": false,
+      "properties": {
+        "entry":  { "type": "array", "minItems": 2, "items": { "type": "string" } },
+        "deeper": { "type": "array", "minItems": 2, "items": { "type": "string" } },
+        "expert": { "type": "array", "minItems": 2, "items": { "type": "string" } }
+      }
+    },
+    "relationships": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string", "pattern": "^artifact/[a-z0-9-]+$" }
+      }
+    },
+    "quickQuestions": {
+      "type": "object",
+      "required": ["en", "zh"],
+      "additionalProperties": false,
+      "properties": {
+        "en": { "type": "array", "items": { "type": "string" } },
+        "zh": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "$defs": {
+    "bilingualString": {
+      "type": "object",
+      "required": ["en", "zh"],
+      "additionalProperties": false,
+      "properties": {
+        "en": { "type": "string", "minLength": 1 },
+        "zh": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

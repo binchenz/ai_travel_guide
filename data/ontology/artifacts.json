@@ -1,0 +1,546 @@
+[
+  {
+    "id": "artifact/da-ke-ding",
+    "type": "BronzeWare",
+    "name": { "en": "Da Ke Ding", "zh": "大克鼎" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Da%20Ke%20Ding%20Western%20Zhou%20bronze%20vessel%20ancient%20Chinese%20artifact%20with%20inscriptions%20on%20a%20dark%20background&image_size=landscape_16_9",
+    "hallId": "hall/bronze-gallery",
+    "dynastyId": "dynasty/western-zhou",
+    "personIds": ["person/king-li-of-zhou"],
+    "period": {
+      "start": -1000,
+      "end": -901,
+      "label": { "en": "10th century BCE", "zh": "公元前10世纪" }
+    },
+    "dimensions": {
+      "height": { "value": 93.1, "unit": "cm" },
+      "weight": { "value": 201.5, "unit": "kg" }
+    },
+    "material": ["bronze", "tin", "lead"],
+    "techniques": ["piece-mold casting"],
+    "inscriptions": {
+      "characterCount": 290,
+      "significance": {
+        "en": "Records land grants and rituals from the reign of King Li of Zhou",
+        "zh": "记录周厉王时期的土地赐予与礼仪活动"
+      }
+    },
+    "culturalContext": {
+      "ritualUse": { "en": "Ancestral worship and feudal ceremonies", "zh": "祭祖与封建仪式" },
+      "socialFunction": { "en": "Symbol of aristocratic status and family lineage", "zh": "贵族身份与家族传承的象征" },
+      "relatedConcepts": ["ritual bronze system", "Zhou li", "feudal hierarchy"]
+    },
+    "narrativePoints": {
+      "entry": [
+        "Its impressive size and weight (over 200 kg!)",
+        "Basic ritual use in ancestor worship",
+        "Survival through dynasties and war"
+      ],
+      "deeper": [
+        "What the inscription actually says",
+        "Land grant system of the Western Zhou",
+        "The Ke family lineage"
+      ],
+      "expert": [
+        "Piece-mold casting technique analysis",
+        "Alloy composition details",
+        "Stylistic comparisons to other bronzes"
+      ]
+    },
+    "relationships": {
+      "sameDynasty": [],
+      "sameTechnique": ["artifact/si-yang-fang-zun"]
+    },
+    "quickQuestions": {
+      "en": ["Tell me about the inscription?", "How heavy is it?", "What was it used for?"],
+      "zh": ["铭文说了什么？", "它有多重？", "这件器物是用来做什么的？"]
+    }
+  },
+  {
+    "id": "artifact/shang-yang-sheng",
+    "type": "BronzeWare",
+    "name": { "en": "Shang Yang Sheng (Standard Measure)", "zh": "商鞅方升" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Shang%20Yang%20Sheng%20Warring%20States%20bronze%20standard%20measure%20ancient%20Chinese%20artifact%20with%20inscriptions&image_size=landscape_16_9",
+    "hallId": "hall/bronze-gallery",
+    "dynastyId": "dynasty/warring-states",
+    "personIds": ["person/shang-yang"],
+    "period": {
+      "start": -344,
+      "end": -344,
+      "label": { "en": "344 BCE", "zh": "公元前344年" }
+    },
+    "dimensions": {
+      "width": { "value": 18.7, "unit": "cm" },
+      "depth": { "value": 6.9, "unit": "cm" }
+    },
+    "material": ["bronze"],
+    "techniques": ["lost-wax casting"],
+    "inscriptions": {
+      "characterCount": 32,
+      "significance": {
+        "en": "Records Shang Yang's standardization of weights and measures",
+        "zh": "记录商鞅推行统一度量衡的改革"
+      }
+    },
+    "culturalContext": {
+      "ritualUse": { "en": "State administration", "zh": "国家行政管理" },
+      "socialFunction": { "en": "Standardization of measurement for taxation and governance", "zh": "统一度量衡以服务赋税与治理" },
+      "relatedConcepts": ["Qin unification", "Chinese statecraft", "legalism"]
+    },
+    "narrativePoints": {
+      "entry": [
+        "What this object actually is (a standard measuring cup)",
+        "Shang Yang - the controversial reformer",
+        "How standardization helped unify China"
+      ],
+      "deeper": [
+        "Why standardization mattered for taxes and trade",
+        "The inscription - what it says",
+        "Shang Yang's fate (spoiler: it didn't end well)"
+      ],
+      "expert": [
+        "Technical analysis of the measurement",
+        "Comparative metrology",
+        "Qin's administrative system"
+      ]
+    },
+    "relationships": {},
+    "quickQuestions": {
+      "en": ["Who was Shang Yang?", "Why is this important?", "What's the volume?"],
+      "zh": ["商鞅是谁？", "这件器物为何重要？", "它的容积是多少？"]
+    }
+  },
+  {
+    "id": "artifact/si-yang-fang-zun",
+    "type": "BronzeWare",
+    "name": { "en": "Four Rams Zun", "zh": "四羊方尊" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Four%20Rams%20Zun%20Shang%20Dynasty%20bronze%20vessel%20with%20four%20ram%20heads%20ancient%20Chinese%20artifact&image_size=landscape_16_9",
+    "hallId": "hall/bronze-gallery",
+    "dynastyId": "dynasty/shang",
+    "personIds": [],
+    "period": {
+      "start": -1300,
+      "end": -1100,
+      "label": { "en": "13th–11th century BCE", "zh": "公元前13—前11世纪" }
+    },
+    "dimensions": {
+      "height": { "value": 58.3, "unit": "cm" },
+      "weight": { "value": 34.5, "unit": "kg" }
+    },
+    "material": ["bronze"],
+    "techniques": ["piece-mold casting", "inlay"],
+    "inscriptions": {
+      "characterCount": 0
+    },
+    "culturalContext": {
+      "ritualUse": { "en": "Wine vessel for ancestor worship", "zh": "祭祖用酒器" },
+      "socialFunction": { "en": "State ritual and ancestor veneration", "zh": "国家礼仪与祭祖活动" },
+      "relatedConcepts": ["Shang cosmology", "animal symbolism"]
+    },
+    "narrativePoints": {
+      "entry": [
+        "Four rams, perfectly placed at the corners",
+        "How it was found by farmers in 1938",
+        "Its almost surreal artistic quality"
+      ],
+      "deeper": [
+        "What the ram symbolized in Shang Dynasty cosmology",
+        "Shang religion and ritual",
+        "Modern history - WWII and after"
+      ],
+      "expert": [
+        "Piece-mold casting technique",
+        "Stylistic analysis",
+        "Comparative iconography"
+      ]
+    },
+    "relationships": {},
+    "quickQuestions": {
+      "en": ["Why rams?", "How was it made?", "When was it found?"],
+      "zh": ["为什么是羊？", "它是如何铸造的？", "何时被发现的？"]
+    }
+  },
+  {
+    "id": "artifact/xuande-incense-burner",
+    "type": "BronzeWare",
+    "name": { "en": "Xuande Bronze Incense Burner", "zh": "宣德炉" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Xuande%20bronze%20incense%20burner%20Ming%20Dynasty%20Chinese%20imperial%20censer%20warm%20patina%20on%20dark%20background&image_size=landscape_16_9",
+    "hallId": "hall/bronze-gallery",
+    "dynastyId": "dynasty/ming",
+    "personIds": ["person/xuande-emperor"],
+    "period": {
+      "start": 1426,
+      "end": 1435,
+      "label": { "en": "Xuande reign, 1426–1435 CE", "zh": "宣德年间，公元1426—1435年" }
+    },
+    "dimensions": {
+      "height": { "value": 10.7, "unit": "cm" },
+      "diameter": { "value": 20.3, "unit": "cm" }
+    },
+    "material": ["bronze", "brass", "gold"],
+    "techniques": ["lost-wax casting", "gilding"],
+    "inscriptions": {
+      "characterCount": 6,
+      "significance": {
+        "en": "Six-character reign mark 'Da Ming Xuande Nian Zhi' cast on the base",
+        "zh": "底部铸有'大明宣德年制'六字款"
+      }
+    },
+    "culturalContext": {
+      "ritualUse": { "en": "Court ritual and meditation ceremony", "zh": "宫廷礼仪与禅修" },
+      "socialFunction": { "en": "Symbol of refined imperial taste and scholarly culture", "zh": "彰显皇家品味与文人雅趣的象征" },
+      "relatedConcepts": ["xuande reign", "Ming court culture", "scholar's studio"]
+    },
+    "narrativePoints": {
+      "entry": [
+        "The warm golden-brown patina that gives Xuande burners their legendary glow",
+        "Commissioned personally by the Xuande Emperor — an artist-emperor",
+        "Why this became the most collected and counterfeited bronze in Chinese history"
+      ],
+      "deeper": [
+        "The secret alloy: brass mixed with gold, silver, and dozens of rare metals",
+        "How court artisans achieved the distinctive skin-like surface texture",
+        "The emperor's own calligraphy passion and its influence on the reign mark"
+      ],
+      "expert": [
+        "Scientific analysis distinguishing genuine Xuande burners from later imitations",
+        "Typological classification of censer shapes and their ritual functions",
+        "Provenance tracing through historical inventories and auction records"
+      ]
+    },
+    "relationships": {},
+    "quickQuestions": {
+      "en": ["Why is the color so special?", "Is this genuine Xuande?", "What was it used for?"],
+      "zh": ["炉色为何如此特别？", "这是真品宣德炉吗？", "它是用来做什么的？"]
+    }
+  },
+  {
+    "id": "artifact/ming-blue-white-vase",
+    "type": "Ceramic",
+    "name": { "en": "Blue-and-white Jar with Grape and Squirrel Design", "zh": "青花松鼠葡萄纹大罐" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Blue-and-white%20Jar%20with%20Grape%20and%20Squirrel%20Design%20Ming%20Dynasty%20porcelain%20Chinese%20ceramic%20artifact&image_size=landscape_16_9",
+    "hallId": "hall/ceramics-gallery",
+    "dynastyId": "dynasty/ming",
+    "personIds": [],
+    "period": {
+      "start": 1426,
+      "end": 1435,
+      "label": { "en": "Xuande reign, 1426–1435 CE", "zh": "宣德年间，公元1426—1435年" }
+    },
+    "dimensions": {
+      "height": { "value": 40.5, "unit": "cm" }
+    },
+    "material": ["porcelain", "cobalt blue"],
+    "techniques": ["underglaze blue painting"],
+    "culturalContext": {
+      "ritualUse": { "en": "Court display and gift", "zh": "宫廷陈设与赐赠" },
+      "socialFunction": { "en": "Symbol of imperial taste and luxury", "zh": "皇家品味与奢华的象征" },
+      "relatedConcepts": ["blue and white porcelain", "global trade", "Ming court"]
+    },
+    "narrativePoints": {
+      "entry": [
+        "The iconic blue-and-white style that defines Chinese porcelain worldwide",
+        "Playful squirrels chasing grapes — a surprisingly charming imperial motif",
+        "Why Ming blue-and-white porcelain became the most traded luxury good on earth"
+      ],
+      "deeper": [
+        "The cobalt for this blue actually came from Persia via the Silk Road",
+        "Why blue-and-white became a global style copied from Delft to Iznik",
+        "Xuande reign — the golden age of imperial porcelain production"
+      ],
+      "expert": [
+        "Technical analysis of the glaze: bubbles, texture, and firing temperature",
+        "Iconographic study of the squirrel-and-grape motif across different reigns",
+        "Dating criteria: how experts distinguish genuine Xuande from later copies"
+      ]
+    },
+    "relationships": {},
+    "quickQuestions": {
+      "en": ["Why blue and white?", "Where's the cobalt from?", "Is this imperial?"],
+      "zh": ["为何是青花？", "钴料从哪里来？", "这是官窑器吗？"]
+    }
+  },
+  {
+    "id": "artifact/zi-long-ding",
+    "type": "BronzeWare",
+    "name": { "en": "Zi Long Ding", "zh": "子龙鼎" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Shang%20dynasty%20Zi%20Long%20Ding%20bronze%20ritual%20cauldron%20dragon%20motif%20ancient&image_size=landscape_16_9",
+    "hallId": "hall/bronze-gallery",
+    "dynastyId": "dynasty/shang",
+    "personIds": [],
+    "period": { "start": -1200, "end": -1046, "label": { "en": "Late Shang, c. 12th–11th century BCE", "zh": "商代晚期，约公元前12—前11世纪" } },
+    "dimensions": { "height": { "value": 103.0, "unit": "cm" }, "weight": { "value": 230.0, "unit": "kg" } },
+    "material": ["bronze"],
+    "techniques": ["piece-mold casting"],
+    "inscriptions": { "characterCount": 2, "significance": { "en": "Bears the clan mark 'Zi Long'.", "zh": "带有族徽'子龙'铭文。" } },
+    "culturalContext": {
+      "ritualUse": { "en": "Ancestral sacrifice.", "zh": "祭祖。" },
+      "socialFunction": { "en": "Clan identity and political authority.", "zh": "族群认同与政治权威。" },
+      "relatedConcepts": ["Shang clan system", "totemic marks"]
+    },
+    "narrativePoints": {
+      "entry": ["One of the largest surviving Shang ding at 230 kg", "A dragon clan mark older than Chinese writing systems"],
+      "deeper": ["Why clan marks matter for Shang social structure", "What the dragon motif represented in ritual"],
+      "expert": ["Comparative analysis with other Shang ding typology", "Alloy composition dating methods"]
+    },
+    "relationships": { "sameDynasty": ["artifact/si-yang-fang-zun"], "sameTechnique": ["artifact/da-ke-ding"] },
+    "quickQuestions": {
+      "en": ["Why is it called Zi Long?", "How does it compare to Da Ke Ding?"],
+      "zh": ["为何叫'子龙'？", "与大克鼎相比如何？"]
+    }
+  },
+  {
+    "id": "artifact/han-bronze-mirror",
+    "type": "BronzeWare",
+    "name": { "en": "Han TLV Bronze Mirror", "zh": "汉代规矩镜" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Han%20dynasty%20TLV%20bronze%20mirror%20cosmic%20design%20ancient&image_size=landscape_16_9",
+    "hallId": "hall/bronze-gallery",
+    "dynastyId": "dynasty/han",
+    "personIds": ["person/han-wudi"],
+    "period": { "start": -100, "end": 100, "label": { "en": "c. 100 BCE – 100 CE", "zh": "约公元前100年—公元100年" } },
+    "dimensions": { "diameter": { "value": 18.2, "unit": "cm" } },
+    "material": ["bronze"],
+    "techniques": ["piece-mold casting", "relief carving"],
+    "inscriptions": { "characterCount": 24, "significance": { "en": "Auspicious phrases about longevity and cosmic order.", "zh": "长寿与宇宙秩序的吉语。" } },
+    "culturalContext": {
+      "ritualUse": { "en": "Personal reflection and cosmological symbolism.", "zh": "照容与宇宙象征。" },
+      "socialFunction": { "en": "Everyday object for the Han elite.", "zh": "上层日用器。" },
+      "relatedConcepts": ["Han cosmology", "TLV pattern", "wuxing"]
+    },
+    "narrativePoints": {
+      "entry": ["A mirror that shows the whole universe in its patterns", "The T/L/V shapes encode ancient Chinese cosmology"],
+      "deeper": ["What the TLV pattern encodes about Han cosmology", "From daily object to burial good"],
+      "expert": ["Typology of TLV mirrors across the Han", "Alloy composition and reflectivity analysis"]
+    },
+    "relationships": { "sameDynasty": [] },
+    "quickQuestions": {
+      "en": ["What do the T/L/V shapes mean?", "Who used it?"],
+      "zh": ["T/L/V形状含义？", "谁使用它？"]
+    }
+  },
+  {
+    "id": "artifact/tang-sancai-horse",
+    "type": "Ceramic",
+    "name": { "en": "Tang Sancai Horse", "zh": "唐三彩马" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Tang%20dynasty%20sancai%20three%20color%20glazed%20horse%20figurine%20vivid&image_size=landscape_16_9",
+    "hallId": "hall/ceramics-gallery",
+    "dynastyId": "dynasty/tang",
+    "personIds": [],
+    "period": { "start": 700, "end": 800, "label": { "en": "8th century CE", "zh": "公元8世纪" } },
+    "dimensions": { "height": { "value": 66.5, "unit": "cm" } },
+    "material": ["earthenware", "lead glaze"],
+    "techniques": ["three-color glazing", "mold-assembled figurine"],
+    "culturalContext": {
+      "ritualUse": { "en": "Tomb burial good (mingqi).", "zh": "随葬明器。" },
+      "socialFunction": { "en": "Display of elite status in afterlife.", "zh": "炫耀贵族身份的随葬品。" },
+      "relatedConcepts": ["Tang cosmopolitanism", "Silk Road horses", "mingqi tradition"]
+    },
+    "narrativePoints": {
+      "entry": ["The most beloved Tang ceramic figure", "Made to serve the dead in the afterlife with colors unfaded after 1300 years"],
+      "deeper": ["Why horses mattered so much in Tang society", "Sancai glaze chemistry and why it survived"],
+      "expert": ["Lead glaze stability and firing temperatures", "Regional kiln origins of sancai"]
+    },
+    "relationships": { "sameDynasty": [] },
+    "quickQuestions": {
+      "en": ["Why three colors?", "Was it buried in a tomb?"],
+      "zh": ["为何三色？", "是随葬品吗？"]
+    }
+  },
+  {
+    "id": "artifact/ru-ware-bowl",
+    "type": "Ceramic",
+    "name": { "en": "Ru-ware Bowl", "zh": "汝窑碗" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Song%20dynasty%20Ru%20ware%20celadon%20bowl%20pale%20blue%20delicate&image_size=landscape_16_9",
+    "hallId": "hall/ceramics-gallery",
+    "dynastyId": "dynasty/song",
+    "personIds": ["person/song-huizong"],
+    "period": { "start": 1086, "end": 1125, "label": { "en": "Late 11th – early 12th century", "zh": "11世纪末至12世纪初" } },
+    "dimensions": { "diameter": { "value": 12.5, "unit": "cm" }, "height": { "value": 5.2, "unit": "cm" } },
+    "material": ["porcelain", "iron-based glaze"],
+    "techniques": ["imperial kiln firing", "celadon glaze"],
+    "culturalContext": {
+      "ritualUse": { "en": "Scholar's tea wares and imperial use.", "zh": "文人茶具与宫廷器。" },
+      "socialFunction": { "en": "Supreme object of Song connoisseurship.", "zh": "宋代鉴藏之冠。" },
+      "relatedConcepts": ["Song aesthetics", "imperial kiln", "ice crackle"]
+    },
+    "narrativePoints": {
+      "entry": ["Fewer than a hundred Ru pieces survive worldwide", "A color that poets compared to 'sky after rain'"],
+      "deeper": ["Why Emperor Huizong obsessed over celadon", "The fragile politics of imperial kilns"],
+      "expert": ["Iron-titanium glaze chemistry", "Scientific authentication methods"]
+    },
+    "relationships": { "sameDynasty": [] },
+    "quickQuestions": {
+      "en": ["Why is Ru ware so rare?", "What is the signature color?"],
+      "zh": ["为何汝窑珍稀？", "标志性颜色？"]
+    }
+  },
+  {
+    "id": "artifact/yuan-blue-white-plate",
+    "type": "Ceramic",
+    "name": { "en": "Yuan Blue-and-White Plate", "zh": "元青花盘" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Yuan%20dynasty%20blue%20and%20white%20porcelain%20plate%20cobalt%20dragon%20pattern&image_size=landscape_16_9",
+    "hallId": "hall/ceramics-gallery",
+    "dynastyId": "dynasty/yuan",
+    "personIds": [],
+    "period": { "start": 1300, "end": 1368, "label": { "en": "14th century CE", "zh": "公元14世纪" } },
+    "dimensions": { "diameter": { "value": 45.0, "unit": "cm" } },
+    "material": ["porcelain", "cobalt blue pigment"],
+    "techniques": ["underglaze cobalt painting"],
+    "culturalContext": {
+      "ritualUse": { "en": "Export ware and court use.", "zh": "外销与宫廷用。" },
+      "socialFunction": { "en": "Prestige object traded across Eurasia.", "zh": "横跨欧亚的贵重商品。" },
+      "relatedConcepts": ["Persian cobalt trade", "Yuan globalization", "Jingdezhen pioneers"]
+    },
+    "narrativePoints": {
+      "entry": ["The ancestor of all blue-and-white porcelain", "Made for Persian and Middle Eastern tastes with cobalt blue from Persia"],
+      "deeper": ["How Persian patterns shaped Chinese decoration", "Yuan kiln organization at Jingdezhen"],
+      "expert": ["Cobalt mineralogy and sourcing", "Comparative dating with Ming wares"]
+    },
+    "relationships": { "sameDynasty": [], "sameTechnique": ["artifact/ming-blue-white-vase"] },
+    "quickQuestions": {
+      "en": ["Why was it made for export?", "Where was the cobalt from?"],
+      "zh": ["为何外销？", "钴料来自哪里？"]
+    }
+  },
+  {
+    "id": "artifact/huai-su-autobiography",
+    "type": "Calligraphy",
+    "name": { "en": "Huai Su Autobiography (Facsimile)", "zh": "怀素自叙帖（摹本）" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Huai%20Su%20cursive%20calligraphy%20scroll%20Tang%20dynasty%20wild%20ink%20brush&image_size=landscape_16_9",
+    "hallId": "hall/painting-gallery",
+    "dynastyId": "dynasty/tang",
+    "personIds": [],
+    "period": { "start": 777, "end": 777, "label": { "en": "777 CE", "zh": "公元777年" } },
+    "dimensions": { "length": { "value": 755.0, "unit": "cm" } },
+    "material": ["ink", "paper"],
+    "techniques": ["wild cursive script (kuangcao)"],
+    "culturalContext": {
+      "ritualUse": { "en": "Personal artistic expression.", "zh": "个人艺术表达。" },
+      "socialFunction": { "en": "Model for subsequent Chinese calligraphic tradition.", "zh": "奠定后世草书典范。" },
+      "relatedConcepts": ["kuangcao", "Tang Buddhism", "Zen spontaneity"]
+    },
+    "narrativePoints": {
+      "entry": ["Writing so wild it looks like abstract art", "A monk's personal storyscroll that changed calligraphy forever"],
+      "deeper": ["Why Huai Su's cursive broke the rules of his era", "How Zen influenced his brushwork"],
+      "expert": ["Brush dynamics and ink concentration analysis", "Transmission and authentication of Tang scrolls"]
+    },
+    "relationships": { "sameDynasty": [] },
+    "quickQuestions": {
+      "en": ["Can you even read it?", "Who was Huai Su?"],
+      "zh": ["真的能读懂吗？", "怀素是谁？"]
+    }
+  },
+  {
+    "id": "artifact/qianlong-jade-scroll",
+    "type": "Jade",
+    "name": { "en": "Qianlong-inscribed Jade Scroll", "zh": "清乾隆御题玉册" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Qing%20dynasty%20Qianlong%20inscribed%20jade%20scroll%20ornate%20carving%20imperial&image_size=landscape_16_9",
+    "hallId": "hall/painting-gallery",
+    "dynastyId": "dynasty/qing",
+    "personIds": ["person/kangxi-emperor"],
+    "period": { "start": 1755, "end": 1796, "label": { "en": "Qianlong reign, 1735-1796", "zh": "清乾隆年间" } },
+    "dimensions": { "length": { "value": 27.0, "unit": "cm" }, "width": { "value": 12.0, "unit": "cm" } },
+    "material": ["nephrite jade", "gold inlay"],
+    "techniques": ["jade carving", "gold inlay inscription"],
+    "inscriptions": { "characterCount": 120, "significance": { "en": "Qianlong's own poem praising a Song painting.", "zh": "乾隆为一幅宋画所题的御诗。" } },
+    "culturalContext": {
+      "ritualUse": { "en": "Imperial commentary on classical art.", "zh": "帝王对经典艺术的题跋。" },
+      "socialFunction": { "en": "Display of imperial connoisseurship and power.", "zh": "展示帝王鉴藏与权威。" },
+      "relatedConcepts": ["Qing imperial collecting", "text as artifact", "Qianlong's aesthetic program"]
+    },
+    "narrativePoints": {
+      "entry": ["The emperor who left poems on everything", "A piece of jade carrying imperial handwriting and a political message"],
+      "deeper": ["Why Qianlong inscribed so many artworks", "Jade as medium for imperial text"],
+      "expert": ["Jade sourcing and carving techniques", "Studies of Qianlong's inscription patterns across the collection"]
+    },
+    "relationships": { "sameDynasty": [] },
+    "quickQuestions": {
+      "en": ["Why jade for an inscription?", "Is this considered vandalism today?"],
+      "zh": ["为何刻在玉上？", "这算不算破坏文物？"]
+    }
+  },
+  {
+    "id": "artifact/warring-states-coin",
+    "type": "Coin",
+    "name": { "en": "Warring States Knife Coin", "zh": "战国刀币" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Warring%20states%20bronze%20knife%20money%20coin%20ancient%20China&image_size=landscape_16_9",
+    "hallId": "hall/bronze-gallery",
+    "dynastyId": "dynasty/warring-states",
+    "personIds": [],
+    "period": { "start": -475, "end": -221, "label": { "en": "475–221 BCE", "zh": "公元前475—前221年" } },
+    "dimensions": { "length": { "value": 18.0, "unit": "cm" } },
+    "material": ["bronze"],
+    "techniques": ["mold casting"],
+    "culturalContext": {
+      "ritualUse": { "en": "Everyday trade.", "zh": "日常贸易。" },
+      "socialFunction": { "en": "Pre-unification regional currency.", "zh": "统一前区域货币。" },
+      "relatedConcepts": ["pre-Qin economy", "regional currencies", "mint variation"]
+    },
+    "narrativePoints": {
+      "entry": ["Money shaped like a knife — combining tool and currency in one", "Each Warring State had its own currency before Qin unified them"],
+      "deeper": ["Regional currency systems before unification", "Why Qi and Yan chose knife shapes"],
+      "expert": ["Typology of knife coin variants by mint", "Alloy composition and circulation patterns"]
+    },
+    "relationships": { "sameDynasty": ["artifact/shang-yang-sheng"] },
+    "quickQuestions": {
+      "en": ["Why was money shaped like a knife?", "How did Qin change this?"],
+      "zh": ["为何钱币做成刀形？", "秦统一后如何变？"]
+    }
+  },
+  {
+    "id": "artifact/qing-lacquer-box",
+    "type": "Lacquer",
+    "name": { "en": "Qing Carved Lacquer Box", "zh": "清剔红漆盒" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Qing%20dynasty%20carved%20red%20lacquer%20box%20intricate%20pattern%20imperial&image_size=landscape_16_9",
+    "hallId": "hall/painting-gallery",
+    "dynastyId": "dynasty/qing",
+    "personIds": [],
+    "period": { "start": 1700, "end": 1800, "label": { "en": "18th century CE", "zh": "公元18世纪" } },
+    "dimensions": { "diameter": { "value": 22.0, "unit": "cm" }, "height": { "value": 8.0, "unit": "cm" } },
+    "material": ["wood core", "lacquer"],
+    "techniques": ["carved red lacquer (tihong)", "polishing"],
+    "culturalContext": {
+      "ritualUse": { "en": "Imperial gift-giving and storage.", "zh": "宫廷馈赠与贮物。" },
+      "socialFunction": { "en": "High-status gift.", "zh": "高端礼品。" },
+      "relatedConcepts": ["tihong", "Qing workshops", "gift economy"]
+    },
+    "narrativePoints": {
+      "entry": ["Hundred-layer lacquer, each polished by hand over months", "Hidden patterns appear only after deep carving"],
+      "deeper": ["How many months a single layer took to cure", "Imperial workshop organization in the Qing"],
+      "expert": ["Lacquer tree biology and sap composition", "Authentication via layer analysis and infrared"]
+    },
+    "relationships": { "sameDynasty": ["artifact/qianlong-jade-scroll"] },
+    "quickQuestions": {
+      "en": ["How many lacquer layers?", "Why red?"],
+      "zh": ["几层漆？", "为何是红色？"]
+    }
+  },
+  {
+    "id": "artifact/neolithic-jade-cong",
+    "type": "Jade",
+    "name": { "en": "Neolithic Liangzhu Jade Cong", "zh": "良渚玉琮" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Neolithic%20Liangzhu%20culture%20jade%20cong%20tube%20ritual%20object%20ancient&image_size=landscape_16_9",
+    "hallId": "hall/bronze-gallery",
+    "dynastyId": "dynasty/shang",
+    "personIds": [],
+    "period": { "start": -3300, "end": -2200, "label": { "en": "Liangzhu culture, 3300–2200 BCE", "zh": "良渚文化，公元前3300—前2200年" } },
+    "dimensions": { "height": { "value": 31.0, "unit": "cm" }, "width": { "value": 7.0, "unit": "cm" } },
+    "material": ["nephrite jade"],
+    "techniques": ["abrasive carving"],
+    "culturalContext": {
+      "ritualUse": { "en": "Interface between earth and heaven; burial goods.", "zh": "天地沟通，葬仪礼器。" },
+      "socialFunction": { "en": "Elite ritual monopoly.", "zh": "上层仪式垄断。" },
+      "relatedConcepts": ["Liangzhu culture", "jade ritual", "pre-dynastic China"]
+    },
+    "narrativePoints": {
+      "entry": ["Five thousand years old — older than Chinese writing by a millennium", "Carved without any metal tools using only string and sand"],
+      "deeper": ["What Liangzhu burials tell us about social stratification", "The mystery of the mask pattern no one fully understands"],
+      "expert": ["Dating techniques for Neolithic jade", "Ongoing scholarly debates about symbolic meaning"]
+    },
+    "relationships": {},
+    "quickQuestions": {
+      "en": ["How is it carved without metal?", "How old is it really?"],
+      "zh": ["没有金属工具如何雕刻？", "到底多老？"]
+    }
+  }
+]
