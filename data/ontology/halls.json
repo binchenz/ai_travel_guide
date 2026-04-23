@@ -1,0 +1,16 @@
+[
+  {
+    "id": "hall/bronze-gallery",
+    "name": { "en": "Chinese Ancient Bronze Gallery", "zh": "中国古代青铜馆" },
+    "floor": 1,
+    "theme": { "en": "Ritual vessels and inscriptions from the Shang through Han dynasties",
+               "zh": "从商代到汉代的礼器与铭文" }
+  },
+  {
+    "id": "hall/ceramics-gallery",
+    "name": { "en": "Chinese Ceramics Gallery", "zh": "中国陶瓷馆" },
+    "floor": 2,
+    "theme": { "en": "Two thousand years of Chinese pottery and porcelain",
+               "zh": "两千年的中国陶瓷艺术" }
+  }
+]

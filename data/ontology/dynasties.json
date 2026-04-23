@@ -1,0 +1,103 @@
+[
+  {
+    "id": "dynasty/shang",
+    "name": { "en": "Shang Dynasty", "zh": "商朝" },
+    "period": { "start": -1600, "end": -1046,
+                "label": { "en": "1600-1046 BCE", "zh": "公元前1600—前1046年" } },
+    "successor": "dynasty/western-zhou",
+    "shortDesc": { "en": "Bronze age dynasty famous for oracle bone script and ritual vessels.",
+                   "zh": "青铜时代王朝，以甲骨文和礼器闻名。" }
+  },
+  {
+    "id": "dynasty/western-zhou",
+    "name": { "en": "Western Zhou", "zh": "西周" },
+    "period": { "start": -1046, "end": -771,
+                "label": { "en": "1046-771 BCE", "zh": "公元前1046—前771年" } },
+    "predecessor": "dynasty/shang",
+    "successor": "dynasty/eastern-zhou",
+    "shortDesc": { "en": "Feudal dynasty whose ritual bronze inscriptions are primary historical sources.",
+                   "zh": "封建王朝，其青铜铭文是重要的历史文献。" }
+  },
+  {
+    "id": "dynasty/eastern-zhou",
+    "name": { "en": "Eastern Zhou", "zh": "东周" },
+    "period": { "start": -770, "end": -256,
+                "label": { "en": "770-256 BCE", "zh": "公元前770—前256年" } },
+    "predecessor": "dynasty/western-zhou",
+    "shortDesc": { "en": "Later Zhou, encompassing the Spring and Autumn and Warring States periods.",
+                   "zh": "东迁之后的周朝，包括春秋与战国时期。" }
+  },
+  {
+    "id": "dynasty/warring-states",
+    "name": { "en": "Warring States Period", "zh": "战国" },
+    "period": { "start": -475, "end": -221,
+                "label": { "en": "475-221 BCE", "zh": "公元前475—前221年" } },
+    "predecessor": "dynasty/eastern-zhou",
+    "successor": "dynasty/qin",
+    "shortDesc": { "en": "Era of seven rival states ending with Qin unification.",
+                   "zh": "七雄争霸，终以秦统一天下。" }
+  },
+  {
+    "id": "dynasty/qin",
+    "name": { "en": "Qin Dynasty", "zh": "秦朝" },
+    "period": { "start": -221, "end": -206,
+                "label": { "en": "221-206 BCE", "zh": "公元前221—前206年" } },
+    "predecessor": "dynasty/warring-states",
+    "successor": "dynasty/han",
+    "shortDesc": { "en": "First unified Chinese empire; standardized weights, measures, and script.",
+                   "zh": "中国首个统一帝国，统一度量衡与文字。" }
+  },
+  {
+    "id": "dynasty/han",
+    "name": { "en": "Han Dynasty", "zh": "汉朝" },
+    "period": { "start": -206, "end": 220,
+                "label": { "en": "206 BCE – 220 CE", "zh": "公元前206—公元220年" } },
+    "predecessor": "dynasty/qin",
+    "shortDesc": { "en": "Long-lasting empire whose cultural legacy defined Han identity.",
+                   "zh": "延续四百余年的帝国，奠定华夏文化认同。" }
+  },
+  {
+    "id": "dynasty/tang",
+    "name": { "en": "Tang Dynasty", "zh": "唐朝" },
+    "period": { "start": 618, "end": 907,
+                "label": { "en": "618-907 CE", "zh": "公元618—907年" } },
+    "shortDesc": { "en": "Cosmopolitan golden age of Chinese poetry, painting, and tricolor ceramics.",
+                   "zh": "开放繁盛的黄金时代，以诗、画与唐三彩著称。" }
+  },
+  {
+    "id": "dynasty/song",
+    "name": { "en": "Song Dynasty", "zh": "宋朝" },
+    "period": { "start": 960, "end": 1279,
+                "label": { "en": "960-1279 CE", "zh": "公元960—1279年" } },
+    "shortDesc": { "en": "Peak of Chinese ceramics and landscape painting.",
+                   "zh": "中国陶瓷与山水画的巅峰。" }
+  },
+  {
+    "id": "dynasty/yuan",
+    "name": { "en": "Yuan Dynasty", "zh": "元朝" },
+    "period": { "start": 1271, "end": 1368,
+                "label": { "en": "1271-1368 CE", "zh": "公元1271—1368年" } },
+    "successor": "dynasty/ming",
+    "shortDesc": { "en": "Mongol-ruled empire that opened China to Eurasian trade.",
+                   "zh": "蒙古人统治的帝国，打通欧亚贸易。" }
+  },
+  {
+    "id": "dynasty/ming",
+    "name": { "en": "Ming Dynasty", "zh": "明朝" },
+    "period": { "start": 1368, "end": 1644,
+                "label": { "en": "1368-1644 CE", "zh": "公元1368—1644年" } },
+    "predecessor": "dynasty/yuan",
+    "successor": "dynasty/qing",
+    "shortDesc": { "en": "Era renowned for blue-and-white porcelain and imperial architecture.",
+                   "zh": "青花瓷与宫廷建筑的时代。" }
+  },
+  {
+    "id": "dynasty/qing",
+    "name": { "en": "Qing Dynasty", "zh": "清朝" },
+    "period": { "start": 1644, "end": 1912,
+                "label": { "en": "1644-1912 CE", "zh": "公元1644—1912年" } },
+    "predecessor": "dynasty/ming",
+    "shortDesc": { "en": "Last imperial dynasty, fusion of Manchu and Han cultures.",
+                   "zh": "最后一个王朝，满汉文化交融。" }
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "person/king-li-of-zhou",
+    "name": { "en": "King Li of Zhou", "zh": "周厉王" },
+    "role": { "en": "Ruler", "zh": "君主" },
+    "dynastyId": "dynasty/western-zhou",
+    "shortDesc": { "en": "Western Zhou king whose reign ended in exile after popular uprising.",
+                   "zh": "西周国王，因失政被国人暴动驱逐。" }
+  },
+  {
+    "id": "person/shang-yang",
+    "name": { "en": "Shang Yang", "zh": "商鞅" },
+    "role": { "en": "Statesman and reformer", "zh": "政治家与改革家" },
+    "dynastyId": "dynasty/warring-states",
+    "shortDesc": { "en": "Qin minister whose Legalist reforms laid the foundation for Chinese unification.",
+                   "zh": "秦国大臣，以法家改革奠定统一基础。" }
+  },
+  {
+    "id": "person/xuande-emperor",
+    "name": { "en": "Xuande Emperor", "zh": "明宣宗" },
+    "role": { "en": "Ming emperor and artist-patron", "zh": "明代皇帝与艺术赞助人" },
+    "dynastyId": "dynasty/ming",
+    "shortDesc": { "en": "Ming emperor whose court produced some of China's finest porcelain and bronze incense burners.",
+                   "zh": "明代皇帝，其宫廷出产精美的瓷器与宣德炉。" }
+  }
+]

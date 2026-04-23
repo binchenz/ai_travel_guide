@@ -1,0 +1,263 @@
+[
+  {
+    "id": "artifact/da-ke-ding",
+    "type": "BronzeWare",
+    "name": { "en": "Da Ke Ding", "zh": "大克鼎" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Da%20Ke%20Ding%20Western%20Zhou%20bronze%20vessel%20ancient%20Chinese%20artifact%20with%20inscriptions%20on%20a%20dark%20background&image_size=landscape_16_9",
+    "hallId": "hall/bronze-gallery",
+    "dynastyId": "dynasty/western-zhou",
+    "personIds": ["person/king-li-of-zhou"],
+    "period": {
+      "start": -1000,
+      "end": -901,
+      "label": { "en": "10th century BCE", "zh": "公元前10世纪" }
+    },
+    "dimensions": {
+      "height": { "value": 93.1, "unit": "cm" },
+      "weight": { "value": 201.5, "unit": "kg" }
+    },
+    "material": ["bronze", "tin", "lead"],
+    "techniques": ["piece-mold casting"],
+    "inscriptions": {
+      "characterCount": 290,
+      "significance": {
+        "en": "Records land grants and rituals from the reign of King Li of Zhou",
+        "zh": "记录周厉王时期的土地赐予与礼仪活动"
+      }
+    },
+    "culturalContext": {
+      "ritualUse": { "en": "Ancestral worship and feudal ceremonies", "zh": "祭祖与封建仪式" },
+      "socialFunction": { "en": "Symbol of aristocratic status and family lineage", "zh": "贵族身份与家族传承的象征" },
+      "relatedConcepts": ["ritual bronze system", "Zhou li", "feudal hierarchy"]
+    },
+    "narrativePoints": {
+      "entry": [
+        "Its impressive size and weight (over 200 kg!)",
+        "Basic ritual use in ancestor worship",
+        "Survival through dynasties and war"
+      ],
+      "deeper": [
+        "What the inscription actually says",
+        "Land grant system of the Western Zhou",
+        "The Ke family lineage"
+      ],
+      "expert": [
+        "Piece-mold casting technique analysis",
+        "Alloy composition details",
+        "Stylistic comparisons to other bronzes"
+      ]
+    },
+    "relationships": {
+      "sameDynasty": [],
+      "sameTechnique": ["artifact/si-yang-fang-zun"]
+    },
+    "quickQuestions": {
+      "en": ["Tell me about the inscription?", "How heavy is it?", "What was it used for?"],
+      "zh": ["铭文说了什么？", "它有多重？", "这件器物是用来做什么的？"]
+    }
+  },
+  {
+    "id": "artifact/shang-yang-sheng",
+    "type": "BronzeWare",
+    "name": { "en": "Shang Yang Sheng (Standard Measure)", "zh": "商鞅方升" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Shang%20Yang%20Sheng%20Warring%20States%20bronze%20standard%20measure%20ancient%20Chinese%20artifact%20with%20inscriptions&image_size=landscape_16_9",
+    "hallId": "hall/bronze-gallery",
+    "dynastyId": "dynasty/warring-states",
+    "personIds": ["person/shang-yang"],
+    "period": {
+      "start": -344,
+      "end": -344,
+      "label": { "en": "344 BCE", "zh": "公元前344年" }
+    },
+    "dimensions": {
+      "width": { "value": 18.7, "unit": "cm" },
+      "depth": { "value": 6.9, "unit": "cm" }
+    },
+    "material": ["bronze"],
+    "techniques": ["lost-wax casting"],
+    "inscriptions": {
+      "characterCount": 32,
+      "significance": {
+        "en": "Records Shang Yang's standardization of weights and measures",
+        "zh": "记录商鞅推行统一度量衡的改革"
+      }
+    },
+    "culturalContext": {
+      "ritualUse": { "en": "State administration", "zh": "国家行政管理" },
+      "socialFunction": { "en": "Standardization of measurement for taxation and governance", "zh": "统一度量衡以服务赋税与治理" },
+      "relatedConcepts": ["Qin unification", "Chinese statecraft", "legalism"]
+    },
+    "narrativePoints": {
+      "entry": [
+        "What this object actually is (a standard measuring cup)",
+        "Shang Yang - the controversial reformer",
+        "How standardization helped unify China"
+      ],
+      "deeper": [
+        "Why standardization mattered for taxes and trade",
+        "The inscription - what it says",
+        "Shang Yang's fate (spoiler: it didn't end well)"
+      ],
+      "expert": [
+        "Technical analysis of the measurement",
+        "Comparative metrology",
+        "Qin's administrative system"
+      ]
+    },
+    "relationships": {},
+    "quickQuestions": {
+      "en": ["Who was Shang Yang?", "Why is this important?", "What's the volume?"],
+      "zh": ["商鞅是谁？", "这件器物为何重要？", "它的容积是多少？"]
+    }
+  },
+  {
+    "id": "artifact/si-yang-fang-zun",
+    "type": "BronzeWare",
+    "name": { "en": "Four Rams Zun", "zh": "四羊方尊" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Four%20Rams%20Zun%20Shang%20Dynasty%20bronze%20vessel%20with%20four%20ram%20heads%20ancient%20Chinese%20artifact&image_size=landscape_16_9",
+    "hallId": "hall/bronze-gallery",
+    "dynastyId": "dynasty/shang",
+    "personIds": [],
+    "period": {
+      "start": -1300,
+      "end": -1100,
+      "label": { "en": "13th–11th century BCE", "zh": "公元前13—前11世纪" }
+    },
+    "dimensions": {
+      "height": { "value": 58.3, "unit": "cm" },
+      "weight": { "value": 34.5, "unit": "kg" }
+    },
+    "material": ["bronze"],
+    "techniques": ["piece-mold casting", "inlay"],
+    "inscriptions": {
+      "characterCount": 0
+    },
+    "culturalContext": {
+      "ritualUse": { "en": "Wine vessel for ancestor worship", "zh": "祭祖用酒器" },
+      "socialFunction": { "en": "State ritual and ancestor veneration", "zh": "国家礼仪与祭祖活动" },
+      "relatedConcepts": ["Shang cosmology", "animal symbolism"]
+    },
+    "narrativePoints": {
+      "entry": [
+        "Four rams, perfectly placed at the corners",
+        "How it was found by farmers in 1938",
+        "Its almost surreal artistic quality"
+      ],
+      "deeper": [
+        "What the ram symbolized in Shang Dynasty cosmology",
+        "Shang religion and ritual",
+        "Modern history - WWII and after"
+      ],
+      "expert": [
+        "Piece-mold casting technique",
+        "Stylistic analysis",
+        "Comparative iconography"
+      ]
+    },
+    "relationships": {},
+    "quickQuestions": {
+      "en": ["Why rams?", "How was it made?", "When was it found?"],
+      "zh": ["为什么是羊？", "它是如何铸造的？", "何时被发现的？"]
+    }
+  },
+  {
+    "id": "artifact/xuande-incense-burner",
+    "type": "BronzeWare",
+    "name": { "en": "Xuande Bronze Incense Burner", "zh": "宣德炉" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Xuande%20bronze%20incense%20burner%20Ming%20Dynasty%20Chinese%20imperial%20censer%20warm%20patina%20on%20dark%20background&image_size=landscape_16_9",
+    "hallId": "hall/bronze-gallery",
+    "dynastyId": "dynasty/ming",
+    "personIds": ["person/xuande-emperor"],
+    "period": {
+      "start": 1426,
+      "end": 1435,
+      "label": { "en": "Xuande reign, 1426–1435 CE", "zh": "宣德年间，公元1426—1435年" }
+    },
+    "dimensions": {
+      "height": { "value": 10.7, "unit": "cm" },
+      "diameter": { "value": 20.3, "unit": "cm" }
+    },
+    "material": ["bronze", "brass", "gold"],
+    "techniques": ["lost-wax casting", "gilding"],
+    "inscriptions": {
+      "characterCount": 6,
+      "significance": {
+        "en": "Six-character reign mark 'Da Ming Xuande Nian Zhi' cast on the base",
+        "zh": "底部铸有'大明宣德年制'六字款"
+      }
+    },
+    "culturalContext": {
+      "ritualUse": { "en": "Court ritual and meditation ceremony", "zh": "宫廷礼仪与禅修" },
+      "socialFunction": { "en": "Symbol of refined imperial taste and scholarly culture", "zh": "彰显皇家品味与文人雅趣的象征" },
+      "relatedConcepts": ["xuande reign", "Ming court culture", "scholar's studio"]
+    },
+    "narrativePoints": {
+      "entry": [
+        "The warm golden-brown patina that gives Xuande burners their legendary glow",
+        "Commissioned personally by the Xuande Emperor — an artist-emperor",
+        "Why this became the most collected and counterfeited bronze in Chinese history"
+      ],
+      "deeper": [
+        "The secret alloy: brass mixed with gold, silver, and dozens of rare metals",
+        "How court artisans achieved the distinctive skin-like surface texture",
+        "The emperor's own calligraphy passion and its influence on the reign mark"
+      ],
+      "expert": [
+        "Scientific analysis distinguishing genuine Xuande burners from later imitations",
+        "Typological classification of censer shapes and their ritual functions",
+        "Provenance tracing through historical inventories and auction records"
+      ]
+    },
+    "relationships": {},
+    "quickQuestions": {
+      "en": ["Why is the color so special?", "Is this genuine Xuande?", "What was it used for?"],
+      "zh": ["炉色为何如此特别？", "这是真品宣德炉吗？", "它是用来做什么的？"]
+    }
+  },
+  {
+    "id": "artifact/ming-blue-white-vase",
+    "type": "Ceramic",
+    "name": { "en": "Blue-and-white Jar with Grape and Squirrel Design", "zh": "青花松鼠葡萄纹大罐" },
+    "imageUrl": "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Blue-and-white%20Jar%20with%20Grape%20and%20Squirrel%20Design%20Ming%20Dynasty%20porcelain%20Chinese%20ceramic%20artifact&image_size=landscape_16_9",
+    "hallId": "hall/ceramics-gallery",
+    "dynastyId": "dynasty/ming",
+    "personIds": [],
+    "period": {
+      "start": 1426,
+      "end": 1435,
+      "label": { "en": "Xuande reign, 1426–1435 CE", "zh": "宣德年间，公元1426—1435年" }
+    },
+    "dimensions": {
+      "height": { "value": 40.5, "unit": "cm" }
+    },
+    "material": ["porcelain", "cobalt blue"],
+    "techniques": ["underglaze blue painting"],
+    "culturalContext": {
+      "ritualUse": { "en": "Court display and gift", "zh": "宫廷陈设与赐赠" },
+      "socialFunction": { "en": "Symbol of imperial taste and luxury", "zh": "皇家品味与奢华的象征" },
+      "relatedConcepts": ["blue and white porcelain", "global trade", "Ming court"]
+    },
+    "narrativePoints": {
+      "entry": [
+        "The iconic blue-and-white style that defines Chinese porcelain worldwide",
+        "Playful squirrels chasing grapes — a surprisingly charming imperial motif",
+        "Why Ming blue-and-white porcelain became the most traded luxury good on earth"
+      ],
+      "deeper": [
+        "The cobalt for this blue actually came from Persia via the Silk Road",
+        "Why blue-and-white became a global style copied from Delft to Iznik",
+        "Xuande reign — the golden age of imperial porcelain production"
+      ],
+      "expert": [
+        "Technical analysis of the glaze: bubbles, texture, and firing temperature",
+        "Iconographic study of the squirrel-and-grape motif across different reigns",
+        "Dating criteria: how experts distinguish genuine Xuande from later copies"
+      ]
+    },
+    "relationships": {},
+    "quickQuestions": {
+      "en": ["Why blue and white?", "Where's the cobalt from?", "Is this imperial?"],
+      "zh": ["为何是青花？", "钴料从哪里来？", "这是官窑器吗？"]
+    }
+  }
+]
