@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "person.schema.json",
+  "title": "Person",
+  "type": "object",
+  "required": ["id", "name", "role", "dynastyId"],
+  "additionalProperties": false,
+  "properties": {
+    "id":        { "type": "string", "pattern": "^person/[a-z0-9-]+$" },
+    "name":      { "$ref": "#/$defs/bilingualString" },
+    "role":      { "$ref": "#/$defs/bilingualString" },
+    "dynastyId": { "type": "string", "pattern": "^dynasty/[a-z0-9-]+$" },
+    "shortDesc": { "$ref": "#/$defs/bilingualString" }
+  },
+  "$defs": {
+    "bilingualString": {
+      "type": "object",
+      "required": ["en", "zh"],
+      "additionalProperties": false,
+      "properties": {
+        "en": { "type": "string", "minLength": 1 },
+        "zh": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

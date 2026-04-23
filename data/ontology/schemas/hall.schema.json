@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hall.schema.json",
+  "title": "Hall",
+  "type": "object",
+  "required": ["id", "name", "floor"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^hall/[a-z0-9-]+$" },
+    "name": { "$ref": "#/$defs/bilingualString" },
+    "floor": { "type": "integer", "minimum": 0 },
+    "theme": { "$ref": "#/$defs/bilingualString" }
+  },
+  "$defs": {
+    "bilingualString": {
+      "type": "object",
+      "required": ["en", "zh"],
+      "additionalProperties": false,
+      "properties": {
+        "en": { "type": "string", "minLength": 1 },
+        "zh": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
