@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 declare global {
@@ -10,15 +10,40 @@ declare global {
 
 const API_BASE_URL = "http://127.0.0.1:8080"
 
+interface Bilingual { en: string; zh: string }
+interface BilingualList { en: string[]; zh: string[] }
+
 interface Exhibit {
   id: string
   originalId?: string
-  name: { en: string; zh: string }
-  imageUrl: string
-  dynasty: string
-  period: string
-  hall: string
-  quickQuestions: string[]
+  type?: string
+  name: Bilingual
+  imageUrl?: string
+  hallId: string
+  dynastyId: string
+  personIds: string[]
+  // Legacy fields returned during deprecation window:
+  hall?: string
+  dynasty?: string
+  period?: string | { start: number; end: number; label: Bilingual }
+  quickQuestions?: string[] | BilingualList
+}
+
+interface Hall    { id: string; name: Bilingual; floor: number; theme?: Bilingual }
+interface Dynasty {
+  id: string
+  name: Bilingual
+  period: { start: number; end: number; label: Bilingual }
+  predecessor?: string | null
+  successor?: string | null
+  shortDesc?: Bilingual | null
+}
+interface Person  {
+  id: string
+  name: Bilingual
+  role: Bilingual
+  dynastyId: string
+  shortDesc?: Bilingual | null
 }
 
 interface Message {
@@ -37,6 +62,118 @@ type DepthLevel = "entry" | "deeper" | "expert"
 
 type TTSSpeed = 0.75 | 0.9 | 1.0 | 1.1 | 1.25
 
+function EntityDrawer({
+  target,
+  onClose,
+  language,
+  halls,
+  dynasties,
+  persons,
+  onPickExhibit,
+}: {
+  target: { type: "hall" | "dynasty" | "person"; id: string } | null
+  onClose: () => void
+  language: "en" | "zh"
+  halls: Record<string, Hall>
+  dynasties: Record<string, Dynasty>
+  persons: Record<string, Person>
+  onPickExhibit: (ex: Exhibit) => void
+}) {
+  const [relatedArtifacts, setRelatedArtifacts] = useState<Exhibit[]>([])
+
+  useEffect(() => {
+    if (!target) { setRelatedArtifacts([]); return }
+    const { type, id } = target
+    fetch(`${API_BASE_URL}/ontology/${type}s/${id}/artifacts`)
+      .then(r => r.json())
+      .then(setRelatedArtifacts)
+      .catch(() => setRelatedArtifacts([]))
+  }, [target])
+
+  if (!target) return null
+  const { type, id } = target
+
+  let body: ReactNode = null
+  if (type === "hall" && halls[id]) {
+    const h = halls[id]
+    body = (
+      <>
+        <h2 className="text-2xl font-semibold mb-2">{h.name[language]}</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          {language === "en" ? `Floor ${h.floor}` : `${h.floor} 层`}
+        </p>
+        {h.theme && <p className="mb-4 italic">{h.theme[language]}</p>}
+      </>
+    )
+  } else if (type === "dynasty" && dynasties[id]) {
+    const d = dynasties[id]
+    body = (
+      <>
+        <h2 className="text-2xl font-semibold mb-2">{d.name[language]}</h2>
+        <p className="text-sm text-gray-600 mb-2">{d.period.label[language]}</p>
+        <p className="text-sm text-gray-500 mb-4">
+          {d.predecessor ? `← ${d.predecessor}` : ""}
+          {d.predecessor && d.successor ? "  " : ""}
+          {d.successor ? `→ ${d.successor}` : ""}
+        </p>
+        {d.shortDesc && <p className="mb-4">{d.shortDesc[language]}</p>}
+      </>
+    )
+  } else if (type === "person" && persons[id]) {
+    const p = persons[id]
+    body = (
+      <>
+        <h2 className="text-2xl font-semibold mb-2">{p.name[language]}</h2>
+        <p className="text-sm text-gray-600 mb-4">{p.role[language]}</p>
+        {p.shortDesc && <p className="mb-4">{p.shortDesc[language]}</p>}
+      </>
+    )
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <div className="flex-1 bg-black/40" onClick={onClose} />
+      <div className="w-full sm:w-96 bg-white p-6 shadow-xl overflow-y-auto">
+        <button className="text-gray-500 hover:text-gray-800 mb-4 text-lg" onClick={onClose}>✕</button>
+        {body}
+        <h3 className="text-lg font-medium mt-6 mb-3">
+          {language === "en" ? "Related artifacts" : "相关展品"}
+        </h3>
+        {relatedArtifacts.length === 0 && (
+          <p className="text-sm text-gray-400">
+            {language === "en" ? "None loaded yet." : "暂无相关展品"}
+          </p>
+        )}
+        <div className="grid grid-cols-2 gap-3">
+          {relatedArtifacts.map(ex => (
+            <button
+              key={ex.id}
+              onClick={() => { onPickExhibit(ex); onClose() }}
+              className="border rounded-lg p-2 text-left hover:bg-gray-50 transition"
+            >
+              <div className="text-sm font-medium">{ex.name[language]}</div>
+              <div className="text-xs text-gray-500">{ex.id.replace("artifact/", "")}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EntityChip({
+  label, onClick,
+}: { label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center px-3 py-1 mr-2 mb-2 rounded-full text-sm bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 transition"
+    >
+      {label}
+    </button>
+  )
+}
+
 function App() {
   const [exhibits, setExhibits] = useState<Exhibit[]>([])
   const [exhibitsLoading, setExhibitsLoading] = useState(true)
@@ -54,6 +191,11 @@ function App() {
   const [depthLevel, setDepthLevel] = useState<DepthLevel>("entry")
   const [ttsSpeed, setTtsSpeed] = useState<TTSSpeed>(0.9)
   const [isRecording, setIsRecording] = useState(false)
+  const [drawerTarget, setDrawerTarget] =
+    useState<{ type: "hall" | "dynasty" | "person"; id: string } | null>(null)
+  const [halls,     setHalls]     = useState<Record<string, Hall>>({})
+  const [dynasties, setDynasties] = useState<Record<string, Dynasty>>({})
+  const [persons,   setPersons]   = useState<Record<string, Person>>({})
   
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
   const streamBufferRef = useRef<string>("")
@@ -95,6 +237,21 @@ function App() {
     
     loadExhibits()
   }, [language])
+
+  // Load ontology entity caches
+  useEffect(() => {
+    const toMap = <T extends { id: string }>(arr: T[]) =>
+      Object.fromEntries(arr.map(x => [x.id, x]))
+    Promise.all([
+      fetch(`${API_BASE_URL}/ontology/halls`).then(r => r.json()),
+      fetch(`${API_BASE_URL}/ontology/dynasties`).then(r => r.json()),
+      fetch(`${API_BASE_URL}/ontology/persons`).then(r => r.json()),
+    ]).then(([h, d, p]) => {
+      setHalls(toMap(h as Hall[]))
+      setDynasties(toMap(d as Dynasty[]))
+      setPersons(toMap(p as Person[]))
+    }).catch(err => console.error("Failed to load ontology entities", err))
+  }, [])
 
   // Stop speaking on unmount
   useEffect(() => {
@@ -795,21 +952,29 @@ function App() {
                   }}
                 >
                   <div className="relative overflow-hidden h-64">
-                    <img
-                      src={exhibit.imageUrl}
-                      alt={exhibit.name.en}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
+                    {exhibit.imageUrl ? (
+                      <img
+                        src={exhibit.imageUrl}
+                        alt={exhibit.name.en}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-slate-700 flex items-center justify-center">
+                        <svg className="w-16 h-16 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90" />
                     <div className="absolute bottom-4 left-4 right-4 text-white">
                       <h3 className="text-lg font-serif font-semibold mb-1 text-slate-100">
                         {language === "en" ? exhibit.name.en : exhibit.name.zh}
                       </h3>
-                      <p className="text-sm text-slate-300">{exhibit.dynasty}</p>
+                      {exhibit.dynasty && <p className="text-sm text-slate-300">{exhibit.dynasty}</p>}
                     </div>
                   </div>
                   <div className="p-5 border-t border-slate-700/50">
-                    <p className="text-sm text-slate-400">{exhibit.hall}</p>
+                    <p className="text-sm text-slate-400">{exhibit.hall ?? exhibit.hallId}</p>
                   </div>
                 </motion.div>
               ))
@@ -823,6 +988,11 @@ function App() {
     )
   }
 
+  // Normalize quickQuestions to a flat string array for the current language
+  const questions: string[] = Array.isArray(currentExhibit?.quickQuestions)
+    ? (currentExhibit.quickQuestions as string[])
+    : ((currentExhibit?.quickQuestions as BilingualList)?.[language] ?? [])
+
   // Chat view with Louvre style!
   return (
     <div className="min-h-screen bg-[#0F172A]">
@@ -831,11 +1001,15 @@ function App() {
       {/* Hero section with exhibit image */}
       <div className="relative h-[40vh] min-h-[300px] overflow-hidden">
         <div className="absolute inset-0">
-          <img
-            src={currentExhibit.imageUrl}
-            alt={currentExhibit.name.en}
-            className="w-full h-full object-cover"
-          />
+          {currentExhibit.imageUrl ? (
+            <img
+              src={currentExhibit.imageUrl}
+              alt={currentExhibit.name.en}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-slate-800" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/80" />
         </div>
         
@@ -867,7 +1041,9 @@ function App() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                {currentExhibit.dynasty} • {currentExhibit.hall}
+                {currentExhibit.dynasty ?? currentExhibit.dynastyId}
+                {" • "}
+                {currentExhibit.hall ?? currentExhibit.hallId}
               </motion.p>
             </div>
             
@@ -876,6 +1052,31 @@ function App() {
         </div>
       </div>
       
+      {/* Entity chips for hall / dynasty / persons */}
+      {currentExhibit && (
+        <div className="bg-[#1E293B] px-6 pt-4 pb-2 max-w-5xl mx-auto flex flex-wrap">
+          {currentExhibit.hallId && halls[currentExhibit.hallId] && (
+            <EntityChip
+              label={halls[currentExhibit.hallId].name[language]}
+              onClick={() => setDrawerTarget({ type: "hall", id: currentExhibit.hallId })}
+            />
+          )}
+          {currentExhibit.dynastyId && dynasties[currentExhibit.dynastyId] && (
+            <EntityChip
+              label={dynasties[currentExhibit.dynastyId].name[language]}
+              onClick={() => setDrawerTarget({ type: "dynasty", id: currentExhibit.dynastyId })}
+            />
+          )}
+          {(currentExhibit.personIds || []).map(pid => persons[pid] ? (
+            <EntityChip
+              key={pid}
+              label={persons[pid].name[language]}
+              onClick={() => setDrawerTarget({ type: "person", id: pid })}
+            />
+          ) : null)}
+        </div>
+      )}
+
       {/* Control bar */}
       <div className="bg-[#1E293B] border-b border-[#FCD34D]/20 py-4">
         <div className="max-w-5xl mx-auto px-6 flex items-center justify-between flex-wrap gap-4">
@@ -1023,7 +1224,7 @@ function App() {
         
         {/* Quick questions */}
         <div className="flex flex-wrap gap-3 mb-6">
-          {currentExhibit.quickQuestions.map((q, idx) => (
+          {questions.map((q, idx) => (
             <motion.button
               key={idx}
               onClick={() => sendMessage(q)}
@@ -1094,6 +1295,16 @@ function App() {
           </motion.button>
         </form>
       </main>
+
+      <EntityDrawer
+        target={drawerTarget}
+        onClose={() => setDrawerTarget(null)}
+        language={language}
+        halls={halls}
+        dynasties={dynasties}
+        persons={persons}
+        onPickExhibit={(ex) => selectExhibit(ex)}
+      />
     </div>
   )
 }
