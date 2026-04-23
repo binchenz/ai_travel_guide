@@ -775,11 +775,9 @@ function App() {
         throw new Error(language === "en" ? "Server error" : "服务器错误")
       }
 
-      // Streaming response + real-time TTS!
-      // Some mobile browsers (e.g. Xiaomi) support ReadableStream partially but fail
-      // silently. We attempt streaming, and if nothing arrives within 8 s we fall back
-      // to a single /chat call so the user always sees a response.
-      const callFallbackChat = async () => {
+      // Fallback for browsers with broken or unsupported ReadableStream (e.g. Xiaomi).
+      // Uses a single /chat call and displays the full response immediately.
+      const chatFallback = async () => {
         const fb = await fetch(`${API_BASE_URL}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -797,71 +795,63 @@ function App() {
       }
 
       const reader = res.body?.getReader()
-      if (!reader) { await callFallbackChat(); return }
+      if (!reader) { await chatFallback(); return }
 
-      const decoder = new TextDecoder()
-      let done = false
+      // Run streaming + an 8 s timeout in a race. Whichever completes first wins.
+      // On browsers where reader.read() never resolves, the timeout fires first.
       let fullText = ""
       let hasStartedTTS = false
 
-      // 8-second watchdog: if no text arrives, abort stream and use /chat fallback.
-      let watchdogFired = false
-      const watchdog = setTimeout(async () => {
-        if (!fullText) {
-          watchdogFired = true
-          try { reader.cancel() } catch { /* ignore */ }
-          await callFallbackChat()
-        }
-      }, 8000)
-
-      while (!done && reader && !watchdogFired) {
-        const { done: doneReading, value } = await reader.read()
-        done = doneReading
-        
-        if (value) {
-          const chunk = decoder.decode(value, { stream: true })
-          fullText += chunk
-          
-          // --- Real-time TTS integration! ---
-          streamBufferRef.current += chunk
-          
-          // Try to start playing if we have enough content
-          if (!hasStartedTTS && streamBufferRef.current.length > 50) {
-            hasStartedTTS = true
-            const breaks = findSentenceBreaks(streamBufferRef.current)
-            if (breaks.length > 0 && breaks[0] > 20) {
-              playBufferedContent()
+      const streamText = async () => {
+        const decoder = new TextDecoder()
+        let done = false
+        while (!done) {
+          const { done: d, value } = await reader.read()
+          done = d
+          if (value) {
+            const chunk = decoder.decode(value, { stream: true })
+            fullText += chunk
+            streamBufferRef.current += chunk
+            if (!hasStartedTTS && streamBufferRef.current.length > 50) {
+              hasStartedTTS = true
+              const breaks = findSentenceBreaks(streamBufferRef.current)
+              if (breaks.length > 0 && breaks[0] > 20) playBufferedContent()
             }
+            setMessages(prev => {
+              const msgs = [...prev]
+              msgs[msgs.length - 1] = { role: "assistant", content: fullText, isStreaming: true }
+              return msgs
+            })
           }
-          // Don't auto-trigger playBufferedContent here - let audio.onended handle continuation
-          
-          setMessages(prev => {
-            const newMessages = [...prev]
-            newMessages[newMessages.length - 1] = { 
-              role: "assistant", 
-              content: fullText,
-              isStreaming: true
-            }
-            return newMessages
-          })
         }
       }
-      
-      clearTimeout(watchdog)
-      if (watchdogFired) return  // fallback already handled it
+
+      const timeout = new Promise<void>((_, reject) =>
+        setTimeout(() => reject(new Error("stream_timeout")), 8000)
+      )
+
+      try {
+        await Promise.race([streamText(), timeout])
+      } catch (err: unknown) {
+        // Timeout or stream error → fall back to /chat
+        try { reader.cancel() } catch { /* ignore */ }
+        if (!fullText) {
+          await chatFallback()
+          return
+        }
+        // Had partial text — show what we got
+      }
 
       // Mark as complete
       setMessages(prev => {
         const newMessages = [...prev]
-        newMessages[newMessages.length - 1] = { 
-          role: "assistant", 
+        newMessages[newMessages.length - 1] = {
+          role: "assistant",
           content: fullText,
-          isStreaming: false
+          isStreaming: false,
         }
         return newMessages
       })
-      
-      // Play any remaining content
       if (streamBufferRef.current.length > 30) {
         setTimeout(playBufferedContent, 300)
       }
