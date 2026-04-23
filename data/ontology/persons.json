@@ -22,5 +22,37 @@
     "dynastyId": "dynasty/ming",
     "shortDesc": { "en": "Ming emperor whose court produced some of China's finest porcelain and bronze incense burners.",
                    "zh": "明代皇帝，其宫廷出产精美的瓷器与宣德炉。" }
+  },
+  {
+    "id": "person/qin-shi-huang",
+    "name": { "en": "Qin Shi Huang", "zh": "秦始皇" },
+    "role": { "en": "First emperor of unified China", "zh": "中国首位皇帝" },
+    "dynastyId": "dynasty/qin",
+    "shortDesc": { "en": "Unifier of China whose standardized script and measures built the imperial template.",
+                   "zh": "统一中国的皇帝，标准化文字与度量，奠定帝国模板。" }
+  },
+  {
+    "id": "person/han-wudi",
+    "name": { "en": "Emperor Wu of Han", "zh": "汉武帝" },
+    "role": { "en": "Han emperor and expansionist", "zh": "汉代皇帝与扩张者" },
+    "dynastyId": "dynasty/han",
+    "shortDesc": { "en": "Expanded Han territory and opened the Silk Road.",
+                   "zh": "拓展汉疆，开通丝绸之路。" }
+  },
+  {
+    "id": "person/song-huizong",
+    "name": { "en": "Emperor Huizong of Song", "zh": "宋徽宗" },
+    "role": { "en": "Song emperor and painter", "zh": "宋代皇帝与画家" },
+    "dynastyId": "dynasty/song",
+    "shortDesc": { "en": "Aesthete emperor whose patronage defined Song court art.",
+                   "zh": "审美至上的皇帝，赞助定义了宋代宫廷艺术。" }
+  },
+  {
+    "id": "person/kangxi-emperor",
+    "name": { "en": "Kangxi Emperor", "zh": "康熙帝" },
+    "role": { "en": "Qing emperor and cultural patron", "zh": "清代皇帝与文化赞助人" },
+    "dynastyId": "dynasty/qing",
+    "shortDesc": { "en": "Long-reigning emperor who consolidated Qing culture and sponsored scholarship.",
+                   "zh": "在位最久的皇帝，巩固清代文化，扶持学术。" }
   }
 ]

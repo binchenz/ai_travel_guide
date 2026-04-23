@@ -49,4 +49,4 @@
 
 ### Related entities the visitor can ask about next
 - Persons: 周厉王
-- sameTechnique: artifact/si-yang-fang-zun
+- sameTechnique: artifact/si-yang-fang-zun, artifact/zi-long-ding

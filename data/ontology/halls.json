@@ -12,5 +12,12 @@
     "floor": 2,
     "theme": { "en": "Two thousand years of Chinese pottery and porcelain",
                "zh": "两千年的中国陶瓷艺术" }
+  },
+  {
+    "id": "hall/painting-gallery",
+    "name": { "en": "Chinese Painting Gallery", "zh": "中国书画馆" },
+    "floor": 3,
+    "theme": { "en": "A thousand years of Chinese painting and calligraphy",
+               "zh": "千年中国书画艺术" }
   }
 ]

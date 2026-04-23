@@ -49,4 +49,4 @@ Warm, engaging, professional but friendly
 
 ### Related entities the visitor can ask about next
 - Persons: King Li of Zhou
-- sameTechnique: artifact/si-yang-fang-zun
+- sameTechnique: artifact/si-yang-fang-zun, artifact/zi-long-ding
