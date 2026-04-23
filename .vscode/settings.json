@@ -1,0 +1,12 @@
+{
+  "json.schemas": [
+    { "fileMatch": ["data/ontology/artifacts.json"],
+      "url": "./data/ontology/schemas/artifact.schema.json" },
+    { "fileMatch": ["data/ontology/halls.json"],
+      "url": "./data/ontology/schemas/hall.schema.json" },
+    { "fileMatch": ["data/ontology/dynasties.json"],
+      "url": "./data/ontology/schemas/dynasty.schema.json" },
+    { "fileMatch": ["data/ontology/persons.json"],
+      "url": "./data/ontology/schemas/person.schema.json" }
+  ]
+}
