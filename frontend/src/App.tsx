@@ -879,9 +879,20 @@ function App() {
         setTimeout(playBufferedContent, 300)
       }
     } catch (err) {
+      const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
       console.error("Failed to send message:", err)
-      setChatError(language === "en" ? "Unable to send message. Please check your connection." : "无法发送消息。请检查网络连接。")
-      showToast("error", language === "en" ? "Failed to send message" : "发送消息失败")
+      setChatError(`[DEBUG] exId=${exId} UA=${navigator.userAgent.slice(0,40)} err=${msg}`)
+      showToast("error", `发送失败: ${msg}`)
+      // Also write the error into the assistant bubble so mobile users without
+      // dev tools can still see the failure reason on-screen.
+      setMessages(prev => {
+        const msgs = [...prev]
+        const last = msgs[msgs.length - 1]
+        if (last && last.role === "assistant" && !last.content) {
+          msgs[msgs.length - 1] = { role: "assistant", content: `[调试信息] ${msg}\nexId=${exId}`, isStreaming: false }
+        }
+        return msgs
+      })
     } finally {
       setIsLoading(false)
     }
