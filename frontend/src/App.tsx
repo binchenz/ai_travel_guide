@@ -776,18 +776,17 @@ function App() {
       }
 
       // Streaming response + real-time TTS!
-      const reader = res.body?.getReader()
-
-      // Fallback for browsers that don't support ReadableStream (e.g. Xiaomi browser).
-      // Re-call the non-streaming /chat endpoint and display the full response at once.
-      if (!reader) {
-        const fallback = await fetch(`${API_BASE_URL}/chat`, {
+      // Some mobile browsers (e.g. Xiaomi) support ReadableStream partially but fail
+      // silently. We attempt streaming, and if nothing arrives within 8 s we fall back
+      // to a single /chat call so the user always sees a response.
+      const callFallbackChat = async () => {
+        const fb = await fetch(`${API_BASE_URL}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sessionId, exhibitId: exId, userInput: userMessage, language, depthLevel }),
         })
-        const data = fallback.ok ? await fallback.json() : null
-        const content: string = data?.content || data?.response || (language === "en" ? "Sorry, no response." : "抱歉，没有收到回复。")
+        const data = fb.ok ? await fb.json() : null
+        const content: string = data?.content || (language === "en" ? "Sorry, no response." : "抱歉，没有收到回复。")
         setMessages(prev => {
           const msgs = [...prev]
           msgs[msgs.length - 1] = { role: "assistant", content, isStreaming: false }
@@ -795,15 +794,27 @@ function App() {
         })
         streamBufferRef.current = content
         setTimeout(playBufferedContent, 300)
-        return
       }
+
+      const reader = res.body?.getReader()
+      if (!reader) { await callFallbackChat(); return }
 
       const decoder = new TextDecoder()
       let done = false
       let fullText = ""
       let hasStartedTTS = false
 
-      while (!done && reader) {
+      // 8-second watchdog: if no text arrives, abort stream and use /chat fallback.
+      let watchdogFired = false
+      const watchdog = setTimeout(async () => {
+        if (!fullText) {
+          watchdogFired = true
+          try { reader.cancel() } catch { /* ignore */ }
+          await callFallbackChat()
+        }
+      }, 8000)
+
+      while (!done && reader && !watchdogFired) {
         const { done: doneReading, value } = await reader.read()
         done = doneReading
         
@@ -836,6 +847,9 @@ function App() {
         }
       }
       
+      clearTimeout(watchdog)
+      if (watchdogFired) return  // fallback already handled it
+
       // Mark as complete
       setMessages(prev => {
         const newMessages = [...prev]
