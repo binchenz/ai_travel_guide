@@ -204,6 +204,10 @@ function App() {
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   // Pre-fetched audio for the next TTS segment — eliminates gap between sentences.
   const nextAudioPromiseRef = useRef<Promise<HTMLAudioElement | null> | null>(null)
+  // Currently playing <audio> element — needed to stop it before starting a new one.
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null)
+  // Abort controller for the in-flight /tts fetch — cancels it when user clicks again.
+  const ttsAbortRef = useRef<AbortController | null>(null)
 
   // Toast notification
   const showToast = (type: "success" | "error" | "info", message: string) => {
@@ -362,60 +366,79 @@ function App() {
     return depth === "entry" ? "入门" : depth === "deeper" ? "进阶" : "专家"
   }
 
+  // Stop every active audio source (HTMLAudioElement + browser speech synthesis).
+  // Also cancels any in-flight /tts fetch and clears the streaming pipeline.
+  const stopAllAudio = () => {
+    // Stop in-flight fetch
+    ttsAbortRef.current?.abort()
+    ttsAbortRef.current = null
+    // Stop HTMLAudioElement
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause()
+      currentAudioRef.current.src = ""
+      currentAudioRef.current = null
+    }
+    // Stop browser speech synthesis
+    if (speechSynthesis.speaking) speechSynthesis.cancel()
+    // Stop streaming pipeline
+    isAutoPlayingRef.current = false
+    nextAudioPromiseRef.current = null
+    streamBufferRef.current = ""
+    setIsPlaying(false)
+    setPlayingIndex(-1)
+  }
+
   // TTS functions - with speed support!
   const speakText = async (text: string, index: number) => {
-    if (speechSynthesis.speaking) {
-      speechSynthesis.cancel()
-      isAutoPlayingRef.current = false
-      if (isPlaying && playingIndex === index) {
-        setIsPlaying(false)
-        setPlayingIndex(-1)
-        return
-      }
+    // Toggle off if already playing this message
+    if (isPlaying && playingIndex === index) {
+      stopAllAudio()
+      return
     }
+    // Always stop whatever is currently playing before starting a new utterance
+    stopAllAudio()
 
     currentPlayIndexRef.current = index
-    isAutoPlayingRef.current = false
-    streamBufferRef.current = text
-    
+
+    const controller = new AbortController()
+    ttsAbortRef.current = controller
+
     try {
       // Use Volcano Engine TTS service
       const response = await fetch(`${API_BASE_URL}/tts`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: text,
-          language: language
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, language }),
+        signal: controller.signal,
       })
       
       if (response.ok) {
         const data = await response.json()
-        console.log('TTS Response:', data)
         
         if (data.audio) {
-          // Create audio element and play
+          // Abort has already fired — another click happened while fetching, bail out.
+          if (controller.signal.aborted) return
+
           try {
             const audio = new Audio(`data:audio/mp3;base64,${data.audio}`)
-            
+            currentAudioRef.current = audio
+
             audio.onplay = () => {
-              console.log('Volcano Engine TTS playing')
               setIsPlaying(true)
               setPlayingIndex(index)
             }
             
             audio.onended = () => {
+              currentAudioRef.current = null
               setIsPlaying(false)
               setPlayingIndex(-1)
             }
             
             audio.onerror = () => {
-              console.error('Audio playback error')
+              currentAudioRef.current = null
               setIsPlaying(false)
               setPlayingIndex(-1)
-              showToast('warning', language === 'en' ? 'Using browser TTS (Volcano Engine audio failed)' : '使用浏览器TTS（火山引擎音频失败）')
+              showToast('warning', language === 'en' ? 'Using browser TTS (audio failed)' : '使用浏览器TTS（音频播放失败）')
               // Fallback to browser TTS
               const utterance = new SpeechSynthesisUtterance(text)
               utterance.lang = language === 'en' ? 'en-US' : 'zh-CN'
@@ -423,7 +446,6 @@ function App() {
               utterance.pitch = 1.0
 
               utterance.onstart = () => {
-                console.log('Browser TTS fallback playing')
                 setIsPlaying(true)
                 setPlayingIndex(index)
               }
@@ -433,8 +455,7 @@ function App() {
                 setPlayingIndex(-1)
               }
 
-              utterance.onerror = (event) => {
-                console.error('Fallback TTS Error:', event)
+              utterance.onerror = () => {
                 setIsPlaying(false)
                 setPlayingIndex(-1)
                 showToast('error', language === 'en' ? 'Failed to play audio' : '播放语音失败')
@@ -486,9 +507,11 @@ function App() {
         setIsPlaying(false)
         setPlayingIndex(-1)
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      // AbortError means user clicked stop/replay — don't start a fallback.
+      if (error instanceof DOMException && error.name === 'AbortError') return
       console.error('TTS Error:', error)
-      // Fallback to browser TTS if Volcano Engine fails
+      // Fallback to browser TTS if backend fails
       const utterance = new SpeechSynthesisUtterance(text)
       utterance.lang = language === 'en' ? 'en-US' : 'zh-CN'
       utterance.rate = ttsSpeed
@@ -504,8 +527,7 @@ function App() {
         setPlayingIndex(-1)
       }
 
-      utterance.onerror = (event) => {
-        console.error('Fallback TTS Error:', event)
+      utterance.onerror = () => {
         setIsPlaying(false)
         setPlayingIndex(-1)
         showToast('error', language === 'en' ? 'Failed to play audio' : '播放语音失败')
@@ -623,12 +645,16 @@ function App() {
     // with the current audio playing (~1-2 s overlap eliminates the gap).
     prefetchNextSegment(buffer, breakIndex)
 
+    // Register as the current audio so stopAllAudio() can cancel it.
+    currentAudioRef.current = audio
+
     audio.onplay = () => {
       setIsPlaying(true)
       setPlayingIndex(currentPlayIndexRef.current)
     }
 
     audio.onended = () => {
+      if (currentAudioRef.current === audio) currentAudioRef.current = null
       streamBufferRef.current = streamBufferRef.current.substring(breakIndex)
       isAutoPlayingRef.current = false
       setIsPlaying(false)
@@ -645,11 +671,16 @@ function App() {
       }
     }
 
-    audio.onerror = () => { isAutoPlayingRef.current = false; setIsPlaying(false) }
+    audio.onerror = () => {
+      if (currentAudioRef.current === audio) currentAudioRef.current = null
+      isAutoPlayingRef.current = false
+      setIsPlaying(false)
+    }
 
     try {
       await audio.play()
     } catch {
+      if (currentAudioRef.current === audio) currentAudioRef.current = null
       isAutoPlayingRef.current = false
       setIsPlaying(false)
     }
@@ -671,13 +702,8 @@ function App() {
     setIsLoading(true)
     setChatError(null)
 
-    // Stop previous playback and discard any stale pre-fetch
-    if (speechSynthesis.speaking) {
-      speechSynthesis.cancel()
-      isAutoPlayingRef.current = false
-    }
-    streamBufferRef.current = ""
-    nextAudioPromiseRef.current = null
+    // Stop all previous audio (HTMLAudioElement + speech synthesis + streaming pipeline)
+    stopAllAudio()
     
     // New message index
     const currentMessageIndex = isInitial ? 0 : messages.length + (isInitial ? 0 : 1)
