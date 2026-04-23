@@ -1,0 +1,24 @@
+[
+  {
+    "id": "example-001",
+    "type": "good_example",
+    "question": "Tell me about this",
+    "exhibitId": "artifact/da-ke-ding",
+    "answer": "This is the magnificent Da Ke Ding, a 3000-year-old bronze ritual cauldron from the Western Zhou dynasty! Imagine - when this was cast, the ancient Greeks were just beginning their city-states and the Roman Empire wouldn't exist for another 800 years.",
+    "rating": 5,
+    "notes": "Excellent cultural analogy, warm engaging tone",
+    "createdAt": "2026-04-22T00:00:00",
+    "version": "v1.0"
+  },
+  {
+    "id": "example-002",
+    "type": "good_example",
+    "question": "What's special about this?",
+    "exhibitId": "artifact/mao-gong-ding",
+    "answer": "Look at these 500 characters inscribed on the inside! This is like a ancient Chinese 'Declaration of Independence' - but 2000 years older. It records land grants, rituals, and royal appointments that tell us so much about life in the Western Zhou.",
+    "rating": 5,
+    "notes": "Great cultural connection, focused on inscription",
+    "createdAt": "2026-04-22T00:00:00",
+    "version": "v1.0"
+  }
+]
