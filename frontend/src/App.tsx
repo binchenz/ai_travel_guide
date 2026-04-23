@@ -8,7 +8,9 @@ declare global {
   }
 }
 
-const API_BASE_URL = "http://127.0.0.1:8080"
+// Empty string = relative URL (works on any host via nginx).
+// In local dev, Vite proxies these paths to the backend (see vite.config.js).
+const API_BASE_URL = ""
 
 interface Bilingual { en: string; zh: string }
 interface BilingualList { en: string[]; zh: string[] }
